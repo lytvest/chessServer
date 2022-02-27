@@ -1,0 +1,46 @@
+{
+
+  BitmapFont: {
+    "con-32": {
+      file: fonts/32-consolas.fnt
+    },
+    "con-20": {
+      file: fonts/20-consolas.fnt
+    },
+  }
+  "Color": {
+    "black-cell": { a: 1.0, b: 0.3882353, g: 0.53333336, r: 0.70980394 },
+    "black-cell-green": { a: 1.0, b: 0.2509804, g: 0.43529412, r: 0.39215687 },
+    "white": { a: 1.0, b: 1.0, g: 1.0, r: 1.0 },
+    "white-cell": { a: 1.0, b: 0.70980394, g: 0.8509804, r: 0.9411765 },
+    "white-cell-green": { a: 1.0, b: 0.4117647, g: 0.5921569, r: 0.50980395 },
+    "dark": { a: 1.0, b: 0.07058824, g: 0.08235294, r: 0.08627451 },
+  }
+
+  "LabelStyle": {
+    "board": {
+      font: con-20,
+      fontColor: white
+    }
+    "default": {
+      "font": "con-32",
+      "fontColor": "white"
+    },
+  },
+  "ButtonStyle":{
+    "nextTurn":{
+      "up": "play-button",
+      "down": "play-button-pressed"
+    },
+    "plus":{
+      "down": "plus",
+      "up": "plus-press"
+    },
+    "minus":{
+      "down": "minus",
+      "up": "minus-press"
+    },
+  },
+
+
+}

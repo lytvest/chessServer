@@ -1,0 +1,200 @@
+
+skin.png
+size: 2048, 2048
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+bg
+  rotate: false
+  xy: 2, 588
+  size: 691, 1131
+  orig: 691, 1131
+  offset: 0, 0
+  index: -1
+chess-icon
+  rotate: false
+  xy: 1106, 103
+  size: 512, 512
+  orig: 512, 512
+  offset: 0, 0
+  index: -1
+default
+  rotate: false
+  xy: 2, 2
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+play-button
+  rotate: false
+  xy: 2, 36
+  size: 550, 550
+  orig: 550, 550
+  offset: 0, 0
+  index: -1
+play-button-pressed
+  rotate: false
+  xy: 695, 1169
+  size: 550, 550
+  orig: 550, 550
+  offset: 0, 0
+  index: -1
+settings
+  rotate: false
+  xy: 695, 617
+  size: 550, 550
+  orig: 550, 550
+  offset: 0, 0
+  index: -1
+settings-pressed
+  rotate: false
+  xy: 1247, 1169
+  size: 550, 550
+  orig: 550, 550
+  offset: 0, 0
+  index: -1
+user
+  rotate: false
+  xy: 1247, 617
+  size: 550, 550
+  orig: 550, 550
+  offset: 0, 0
+  index: -1
+user-pressed
+  rotate: false
+  xy: 554, 36
+  size: 550, 550
+  orig: 550, 550
+  offset: 0, 0
+  index: -1
+white
+  rotate: false
+  xy: 1799, 1718
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
+
+skin2.png
+size: 2048, 2048
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+minus
+  rotate: false
+  xy: 2, 1030
+  size: 512, 512
+  orig: 512, 512
+  offset: 0, 0
+  index: -1
+minus-press
+  rotate: false
+  xy: 2, 516
+  size: 512, 512
+  orig: 512, 512
+  offset: 0, 0
+  index: -1
+plus
+  rotate: false
+  xy: 516, 1030
+  size: 512, 512
+  orig: 512, 512
+  offset: 0, 0
+  index: -1
+plus-press
+  rotate: false
+  xy: 2, 2
+  size: 512, 512
+  orig: 512, 512
+  offset: 0, 0
+  index: -1
+
+skin3.png
+size: 2048, 512
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+chess/bB
+  rotate: false
+  xy: 2, 247
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/bK
+  rotate: false
+  xy: 2, 2
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/bN
+  rotate: false
+  xy: 247, 247
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/bP
+  rotate: false
+  xy: 247, 2
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/bQ
+  rotate: false
+  xy: 492, 247
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/bR
+  rotate: false
+  xy: 492, 2
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/wB
+  rotate: false
+  xy: 737, 247
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/wK
+  rotate: false
+  xy: 737, 2
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/wN
+  rotate: false
+  xy: 982, 247
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/wP
+  rotate: false
+  xy: 982, 2
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/wQ
+  rotate: false
+  xy: 1227, 247
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
+chess/wR
+  rotate: false
+  xy: 1227, 2
+  size: 243, 243
+  orig: 243, 243
+  offset: 0, 0
+  index: -1
