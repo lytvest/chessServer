@@ -242,15 +242,15 @@ void main() {
 	#endif //skinningFlag
 
 	#ifdef skinningFlag
-		vec4 pos = u_worldTrans * skinning * vec4(a_position, 1.0);
+		vec4 position = u_worldTrans * skinning * vec4(a_position, 1.0);
 	#else
-		vec4 pos = u_worldTrans * vec4(a_position, 1.0);
+		vec4 position = u_worldTrans * vec4(a_position, 1.0);
 	#endif
 		
-	gl_Position = u_projViewTrans * pos;
+	gl_Position = u_projViewTrans * position;
 		
 	#ifdef shadowMapFlag
-		vec4 spos = u_shadowMapProjViewTrans * pos;
+		vec4 spos = u_shadowMapProjViewTrans * position;
 		v_shadowMapUv.xyz = (spos.xyz / spos.w) * 0.5 + 0.5;
 		v_shadowMapUv.z = min(v_shadowMapUv.z, 0.998);
 	#endif //shadowMapFlag
@@ -265,7 +265,7 @@ void main() {
 	#endif // normalFlag
 
     #ifdef fogFlag
-        vec3 flen = u_cameraPosition.xyz - pos.xyz;
+        vec3 flen = u_cameraPosition.xyz - position.xyz;
         float fog = dot(flen, flen) * u_cameraPosition.w;
         v_fog = min(fog, 1.0);
     #endif
@@ -311,7 +311,7 @@ void main() {
 			
 		#ifdef specularFlag
 			v_lightSpecular = vec3(0.0);
-			vec3 viewVec = normalize(u_cameraPosition.xyz - pos.xyz);
+			vec3 viewVec = normalize(u_cameraPosition.xyz - position.xyz);
 		#endif // specularFlag
 			
 		#if (numDirectionalLights > 0) && defined(normalFlag)
@@ -329,7 +329,7 @@ void main() {
 
 		#if (numPointLights > 0) && defined(normalFlag)
 			for (int i = 0; i < numPointLights; i++) {
-				vec3 lightDir = u_pointLights[i].position - pos.xyz;
+				vec3 lightDir = u_pointLights[i].position - position.xyz;
 				float dist2 = dot(lightDir, lightDir);
 				lightDir *= inversesqrt(dist2);
 				float NdotL = clamp(dot(normal, lightDir), 0.0, 1.0);

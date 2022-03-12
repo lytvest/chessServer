@@ -1,15 +1,20 @@
 package ru.lytvest.chess.net;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class ContentRequest {
     public String user;
     public String pass;
     public String move;
-
-    public ContentRequest(){}
 
     public ContentRequest(String user, String pass) {
         this.user = user;
@@ -25,7 +30,7 @@ public class ContentRequest {
                 hashed = MessageDigest.getInstance("SHA-256");
             }
             hashed.reset();
-            hashed.update(pass.getBytes(Charset.forName("UTF-8")));
+            hashed.update(pass.getBytes(StandardCharsets.UTF_8));
             result = new String(hashed.digest());
             //System.out.println("hashed " + hashed);
         } catch (NoSuchAlgorithmException e) {
@@ -33,14 +38,5 @@ public class ContentRequest {
         }
         System.out.println("pass=" + pass + " hash" + result);
         return result;
-    }
-
-    @Override
-    public String toString() {
-        return "ContentRequest{" +
-                "user='" + user + '\'' +
-                ", pass='" + pass + '\'' +
-                ", move='" + move + '\'' +
-                '}';
     }
 }

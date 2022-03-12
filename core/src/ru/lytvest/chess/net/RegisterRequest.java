@@ -26,7 +26,7 @@ public class RegisterRequest extends HttpItem{
     @Override
     public void handleResponse(Net.HttpResponse httpResponse) {
         Status status = JSON.fromJson(Status.class, httpResponse.getResultAsStream());
-        if(status.status.equals("ok")){
+        if(status.isOk()){
             Gdx.app.postRunnable(() -> {
                 callback.accept(HttpController.content.user);
             });

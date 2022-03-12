@@ -1,5 +1,6 @@
 package ru.lytvest.chessserver;
 
+import lombok.val;
 import ru.lytvest.chess.Board;
 import ru.lytvest.chess.Move;
 import ru.lytvest.chess.net.AnswerBoard;
@@ -7,7 +8,7 @@ import ru.lytvest.chessserver.entities.User;
 
 import java.util.Arrays;
 
-public class Game {
+public class Game implements GameInf{
     User whiteUser;
     User blackUser;
     Board board = Board.START;
@@ -23,38 +24,45 @@ public class Game {
     }
 
     public AnswerBoard getAnswer(User user) {
-        String color, me, enemy;
-        if (user.equals(whiteUser)){
-            color = "white";
-            me = whiteUser.name;
-            enemy = blackUser.name;
+        val answer = AnswerBoard.builder();
+        if (user.equals(whiteUser)) {
+            answer.youColor("white")
+                    .username(whiteUser.getName())
+                    .enemyUsername(blackUser.getName());
         } else {
-            color = "black";
-            enemy = whiteUser.name;
-            me = blackUser.name;
+            answer.youColor("black")
+                    .username(blackUser.getName())
+                    .enemyUsername(whiteUser.getName());
+
         }
-        if (user.equals(blackUser))
-            color = "black";
-        return new AnswerBoard(color, me, enemy, board.toPen(), timeWhite, timeBlack, movies(user.equals(whiteUser)), oldTurn);
+        return answer.pen(board.toPen())
+                .timeWhite(timeWhite)
+                .timeBlack(timeBlack)
+                .message("get answer for " + user)
+                .move(oldTurn).build();
     }
 
     String movies(boolean isWhite) {
         if (isWhite != board.isWhite)
             return "";
-        return   Arrays.toString(board.filteredMovies().stream().map(Move::toString).toArray());
+        return Arrays.toString(board.filteredMovies().stream().map(Move::toString).toArray());
     }
 
-    public void move(User user, String turn) {
-        if(user.equals(whiteUser) != board.isWhite)
-            return;
-        if(board.numberCourse != 1 && user.equals(whiteUser)){
+    public AnswerBoard move(User user, String turn) {
+        val move = Move.from(turn);
+        if (user.equals(whiteUser) != board.isWhite || !board.canMove(move))
+            return getAnswer(user);
+        if (board.numberCourse != 1 && user.equals(whiteUser)) {
             timeWhite += System.currentTimeMillis() - oldTurnTime;
         }
-        if(board.numberCourse != 1 && user.equals(blackUser)){
+        if (board.numberCourse != 1 && user.equals(blackUser)) {
             timeBlack = System.currentTimeMillis() - oldTurnTime;
         }
         board = board.moved(Move.from(turn));
         oldTurnTime = System.currentTimeMillis();
         oldTurn = turn;
+        val answer = getAnswer(user);
+        answer.setMove(turn);
+        return answer;
     }
 }

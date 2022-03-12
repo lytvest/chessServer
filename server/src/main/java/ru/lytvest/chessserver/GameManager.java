@@ -22,14 +22,14 @@ public class GameManager {
         if(map.containsKey(user))
             return map.get(user).getAnswer(user);
 
-        if (old == null || old.equals(user)){
-            old = user;
+        if (getOld() == null || getOld().equals(user)){
+            setOld(user);
             return null;
         }
 
-        System.out.println("create game " + old + " " + user);
-        var game = new Game(old, user);
-        map.put(old, game);
+        System.out.println("create game " + getOld() + " " + user);
+        var game = new Game(getOld(), user);
+        map.put(getOld(), game);
         map.put(user, game);
         return game.getAnswer(user);
     }
@@ -38,13 +38,14 @@ public class GameManager {
         if (!map.containsKey(user))
             return null;
         var game = map.get(user);
-        game.move(user, turn);
+        if(!game.move(user, turn))
+            return null;
         return game.getAnswer(user);
     }
     public AnswerBoard endGame(User user){
         var answer = map.remove(user).getAnswer(user);
         if (answer != null)
-            answer.message ="game end!";
+            answer.setMessage("game end!");
         return answer;
     }
 

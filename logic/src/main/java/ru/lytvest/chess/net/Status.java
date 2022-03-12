@@ -1,15 +1,20 @@
 package ru.lytvest.chess.net;
 
-public class Status {
-    public String status;
-    public String message;
-    public AnswerBoard game;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    @Override
-    public String toString() {
-        return "Status{" +
-                "status='" + status + '\'' +
-                ", message='" + message + '\'' +
-                '}';
+import java.util.Objects;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Status {
+    private String status;
+    private String message;
+    private AnswerBoard game;
+
+    public boolean isOk(){
+        return Objects.equals(status, "ok");
     }
 }

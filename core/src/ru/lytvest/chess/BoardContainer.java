@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.SizeToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import lombok.val;
 import ru.lytvest.chess.net.HttpController;
 
 import java.util.HashMap;
@@ -26,8 +27,8 @@ public class BoardContainer extends Group {
 
     private Board board;
     private final boolean isWhite;
-    private final HashMap<Pos, Image> figures = new HashMap<>();
-    private final HashMap<Pos, Image> cells = new HashMap<>();
+    private final HashMap<Position, Image> figures = new HashMap<>();
+    private final HashMap<Position, Image> cells = new HashMap<>();
     private final HashMap<Character, Label> labels = new HashMap<>();
     private float size;
     private float startX = 0f;
@@ -42,8 +43,8 @@ public class BoardContainer extends Group {
         updateBoard(board, null);
     }
 
-    private void createFigure(char ch, Pos pos) {
-        Gdx.app.log(getClass().getSimpleName(), "createFigure " + ch + " in pos " + pos);
+    private void createFigure(char ch, Position position) {
+        Gdx.app.log(getClass().getSimpleName(), "createFigure " + ch + " in pos " + position);
         String name =  "chess/w" + ch;
         if(!Character.isUpperCase(ch)) {
             name = "chess/b" + Character.toUpperCase(ch);
@@ -54,33 +55,33 @@ public class BoardContainer extends Group {
 
         img.setSize(size / 10f, size / 10f);
         img.setName("" + ch);
-        figures.put(pos, img);
+        figures.put(position, img);
         addActor(img);
     }
-    private Pos toDisplayPos(Pos pos) {
+    private Position toDisplayPos(Position position) {
         if (!isWhite)
-            return new Pos(7 - pos.x, pos.y);
-        return new Pos(pos.x, 7 - pos.y);
+            return Position.of(7 - position.x, position.y);
+        return Position.of(position.x, 7 - position.y);
     }
-    private void moveFigure(Pos old, Pos newPos){
+    private void moveFigure(Position old, Position newPosition){
         if (!figures.containsKey(old))
             return;
         Image img = figures.get(old);
         figures.remove(old);
-        removeFigure(newPos);
-        figures.put(newPos, img);
-        Pos pos = toDisplayPos(newPos);
+        removeFigure(newPosition);
+        figures.put(newPosition, img);
+        Position position = toDisplayPos(newPosition);
         MoveToAction action = new MoveToAction();
         action.setDuration(0.3f);
-        action.setPosition(startX + pos.x * size, startY + pos.y * size);
+        action.setPosition(startX + position.x * size, startY + position.y * size);
         img.addAction(action);
         Gdx.app.log(getClass().getSimpleName(), "" + img + " count actions: " + img.getActions().size);
     }
 
-    private void removeFigure(Pos pos){
-        if(figures.containsKey(pos)){
-            Image img = figures.get(pos);
-            figures.remove(pos);
+    private void removeFigure(Position position){
+        if(figures.containsKey(position)){
+            Image img = figures.get(position);
+            figures.remove(position);
             removeActor(img);
         }
     }
@@ -96,7 +97,7 @@ public class BoardContainer extends Group {
         }
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                Pos pos = new Pos(x, y);
+                val pos = Position.of(x, y);
                 if(board.get(pos) == ' ' && figures.containsKey(pos)){
                     removeFigure(pos);
                 }
@@ -110,7 +111,7 @@ public class BoardContainer extends Group {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Image img = new Image(Scenes.getSkin(), "white");
-                cells.put(new Pos(i, j), img);
+                cells.put(Position.of(i, j), img);
                 addActor(img);
             }
         }
@@ -138,7 +139,7 @@ public class BoardContainer extends Group {
         }
     }
     private void clearCellsColor(){
-        for(Map.Entry<Pos, Image> entry : cells.entrySet()){
+        for(Map.Entry<Position, Image> entry : cells.entrySet()){
             if ((entry.getKey().x + entry.getKey().y) % 2 == 0)
                 entry.getValue().setColor(blackColor);
             else
@@ -146,9 +147,9 @@ public class BoardContainer extends Group {
         }
     }
     private void updateCellSize(){
-        for(Map.Entry<Pos, Image> entry : cells.entrySet()){
-            Pos pos = toDisplayPos(entry.getKey());
-            entry.getValue().setBounds(startX + pos.x * size, startY + pos.y * size, size, size);
+        for(Map.Entry<Position, Image> entry : cells.entrySet()){
+            Position position = toDisplayPos(entry.getKey());
+            entry.getValue().setBounds(startX + position.x * size, startY + position.y * size, size, size);
         }
         String letters = "abcdefgh";
         String nums = "12345678";
@@ -167,12 +168,12 @@ public class BoardContainer extends Group {
     }
 
     private void updateFigurePositionAndSize(){
-        for(Map.Entry<Pos, Image> entry : figures.entrySet()) {
+        for(Map.Entry<Position, Image> entry : figures.entrySet()) {
             SizeToAction action = new SizeToAction();
             action.setSize(size, size);
             action.setDuration(0.3f);
             entry.getValue().addAction(action);
-            Pos ip = toDisplayPos(entry.getKey());
+            Position ip = toDisplayPos(entry.getKey());
             entry.getValue().setPosition(startX + ip.x * size, startY + ip.y * size);
         }
     }
@@ -192,12 +193,12 @@ public class BoardContainer extends Group {
         updateFigurePositionAndSize();
     }
 
-    private void setGreenColor(Pos pos){
-        if (cells.containsKey(pos)){
-            if ((pos.x + pos.y) % 2 == 0)
-                cells.get(pos).setColor(blackColorGreen);
+    private void setGreenColor(Position position){
+        if (cells.containsKey(position)){
+            if ((position.x + position.y) % 2 == 0)
+                cells.get(position).setColor(blackColorGreen);
             else
-                cells.get(pos).setColor(whiteColorGreen);
+                cells.get(position).setColor(whiteColorGreen);
         }
     }
 
@@ -205,7 +206,7 @@ public class BoardContainer extends Group {
     class MoveListener extends ClickListener{
 
 
-        Pos old = null;
+        Position old = null;
         Actor oldActor = null;
         float sx, sy;
         float tdx, tdy;
@@ -217,14 +218,14 @@ public class BoardContainer extends Group {
             tdx = x;
             tdy = y;
 
-            Pos clickPos = getClickPos(x, y);
+            Position clickPosition = getClickPos(x, y);
             if (old == null) {
-                if (board.get(clickPos) != ' ') {
-                    setGreenColor(clickPos);
-                    for (Move moved : board.filteredMoviesFor(clickPos)) {
+                if (board.get(clickPosition) != ' ') {
+                    setGreenColor(clickPosition);
+                    for (Move moved : board.filteredMoviesFor(clickPosition)) {
                         setGreenColor(moved.end);
                     }
-                    old = clickPos;
+                    old = clickPosition;
                     oldActor = figures.get(old);
                     sx = oldActor.getX() - x;
                     sy = oldActor.getY() - y;
@@ -246,15 +247,15 @@ public class BoardContainer extends Group {
         @Override
         public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
             if (old != null  ) {
-                Pos clickPos = getClickPos(x, y);
-                if (!board.canMove(new Move(old, clickPos)) || board.isWhite != isWhite) {
+                Position clickPosition = getClickPos(x, y);
+                if (!board.canMove(new Move(old, clickPosition)) || board.isWhite != isWhite) {
                     MoveToAction action = new MoveToAction();
-                    Pos pos = toDisplayPos(old);
-                    action.setPosition(startX + pos.x * size, startY + pos.y * size);
+                    Position position = toDisplayPos(old);
+                    action.setPosition(startX + position.x * size, startY + position.y * size);
                     action.setDuration(0.3f);
                     oldActor.addAction(action);
                 }
-                if (old.equals(clickPos)) {
+                if (old.equals(clickPosition)) {
                     old = null;
                 }
             }
@@ -262,27 +263,27 @@ public class BoardContainer extends Group {
             super.touchUp(event, x, y, pointer, button);
         }
 
-        private Pos getClickPos(float x, float y) {
-            return toDisplayPos(new Pos((int) ((x - startX) / size), (int) ((y - startY) / size)));
+        private Position getClickPos(float x, float y) {
+            return toDisplayPos(Position.of((int) ((x - startX) / size), (int) ((y - startY) / size)));
         }
 
         @Override
         public void clicked(InputEvent event, float x, float y) {
             super.clicked(event, x, y);
-            Pos clickPos = getClickPos(x, y);
-            Gdx.app.log(getClass().getSimpleName(), "click in pos " + clickPos + " old pos=" + old);
+            Position clickPosition = getClickPos(x, y);
+            Gdx.app.log(getClass().getSimpleName(), "click in pos " + clickPosition + " old pos=" + old);
             if (old == null) {
-                if (board.get(clickPos) != ' ') {
-                    setGreenColor(clickPos);
-                    for (Move moved : board.filteredMoviesFor(clickPos)) {
+                if (board.get(clickPosition) != ' ') {
+                    setGreenColor(clickPosition);
+                    for (Move moved : board.filteredMoviesFor(clickPosition)) {
                         setGreenColor(moved.end);
                     }
-                    old = clickPos;
+                    old = clickPosition;
                 }
             } else {
 
                 clearCellsColor();
-                Move move = new Move(old, clickPos);
+                Move move = new Move(old, clickPosition);
                 old = null;
                 if(!board.canMove(move) && board.isWhite != isWhite)
                     return;
@@ -293,9 +294,9 @@ public class BoardContainer extends Group {
                 updateBoard(board, move);
                 canUpdated = false;
                 HttpController.move(move.toString(), (answer) -> {
-                    Gdx.app.log(getClass().getSimpleName(), "move to " + move + " pen:" + answer.pen);
+                    Gdx.app.log(getClass().getSimpleName(), "move to " + move + " pen:" + answer.getPen());
                     canUpdated = true;
-                    updateBoard(Board.fromPen(answer.pen), null);
+                    updateBoard(Board.fromPen(answer.getPen()), null);
                 });
             }
 

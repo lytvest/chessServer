@@ -112,14 +112,14 @@ void main() {
 	#endif //skinningFlag
 
 	#ifdef skinningFlag
-		vec4 pos = u_projViewWorldTrans * skinning * vec4(a_position, 1.0);
+		vec4 position = u_projViewWorldTrans * skinning * vec4(a_position, 1.0);
 	#else
-		vec4 pos = u_projViewWorldTrans * vec4(a_position, 1.0);
+		vec4 position = u_projViewWorldTrans * vec4(a_position, 1.0);
 	#endif
 
 	#ifdef PackedDepthFlag
-		v_depth = pos.z / pos.w * 0.5 + 0.5;
+		v_depth = position.z / position.w * 0.5 + 0.5;
 	#endif //PackedDepthFlag
 
-	gl_Position = pos;
+	gl_Position = position;
 }

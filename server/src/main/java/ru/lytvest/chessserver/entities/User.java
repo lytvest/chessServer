@@ -1,6 +1,8 @@
 package ru.lytvest.chessserver.entities;
 
 
+import lombok.*;
+import org.hibernate.Hibernate;
 import ru.lytvest.chess.net.ContentRequest;
 
 import javax.persistence.Entity;
@@ -9,24 +11,21 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.util.Objects;
 
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
+    private String name;
 
-    public String name;
-
-    public String pass;
-
-    public User(){}
-
-    public User(String name, String pass) {
-        this.name = name;
-        this.pass = pass;
-    }
+    private String pass;
 
     public User(ContentRequest login){
         name = login.user;
@@ -36,22 +35,13 @@ public class User {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(name, user.name) && Objects.equals(pass, user.pass);
+        return id != null && Objects.equals(id, user.id);
     }
 
     @Override
     public int hashCode() {
-        return id.intValue();
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", pass='" + pass + '\'' +
-                '}';
+        return getClass().hashCode();
     }
 }

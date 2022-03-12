@@ -18,19 +18,19 @@ public class BoardScene extends Scene {
         stage.addActor(boardContainer);
         final Label label = new Label("find enemy...", skin);
         label.setPosition(width() / 2 - label.getPrefWidth() / 2, height() / 2);
-        //stage.addActor(label);
+        stage.addActor(label);
         HttpController.getBoard(answerBoard -> {
                     if (board == Board.EMPTY) {
                         boardContainer.remove();
-                        board = Board.fromPen(answerBoard.pen);
-                        boardContainer = new BoardContainer(board, Objects.equals(answerBoard.youColor, "white"));
+                        board = Board.fromPen(answerBoard.getPen());
+                        boardContainer = new BoardContainer(board, Objects.equals(answerBoard.getYouColor(), "white"));
                         stage.addActor(boardContainer);
                         resizeBoard();
                         label.remove();
                     }
-                    Gdx.app.log(getClass().getSimpleName(), "get board " + answerBoard.pen);
-                    boardContainer.updateBoard(Board.fromPen(answerBoard.pen),
-                            answerBoard.move != null ? Move.from(answerBoard.move) : null);
+                    Gdx.app.log(getClass().getSimpleName(), "get board " + answerBoard.getPen());
+                    boardContainer.updateBoard(Board.fromPen(answerBoard.getPen()),
+                            answerBoard.getMove() != null ? Move.from(answerBoard.getMove()) : null);
                 }
         );
 

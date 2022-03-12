@@ -25,8 +25,8 @@ public class GetBoardRequest extends HttpItem {
     public void handleResponse(Net.HttpResponse httpResponse) {
         Status status = JSON.fromJson(Status.class, httpResponse.getResultAsStream());
 
-        if (Objects.equals(status.status, "ok")){
-            Gdx.app.postRunnable(() -> callback.accept(status.game));
+        if (status.isOk()){
+            Gdx.app.postRunnable(() -> callback.accept(status.getGame()));
         }
 
         HttpController.getBoard(callback);

@@ -46,7 +46,7 @@ public class SimpleController {
         }
 
         model.addAttribute("status", "ok");
-        model.addAttribute("login", user.name);
+        model.addAttribute("login", user.getName());
 
 
         return "jsonTemplate";
@@ -54,7 +54,7 @@ public class SimpleController {
 
     private User findUser(Model model, ContentRequest contentRequest) {
         var user = new User(contentRequest);
-        var userFound = users.findByNameAndPass(user.name, user.pass);
+        var userFound = users.findByNameAndPass(user.getName(), user.getPass());
         //System.out.println("controller user find " + userFound);
         if (userFound == null) {
             model.addAttribute("status", "fail");
