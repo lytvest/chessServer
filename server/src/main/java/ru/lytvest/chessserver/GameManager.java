@@ -1,5 +1,7 @@
 package ru.lytvest.chessserver;
 
+import lombok.val;
+import ru.lytvest.chess.Board;
 import ru.lytvest.chess.net.AnswerBoard;
 import ru.lytvest.chessserver.entities.User;
 
@@ -8,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameManager {
 
     private User old;
-    private ConcurrentHashMap<User, Game> map = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<User, GameInf> map = new ConcurrentHashMap<>();
 
     synchronized public User getOld() {
         return old;
@@ -21,6 +23,13 @@ public class GameManager {
     public AnswerBoard findGame(User user){
         if(map.containsKey(user))
             return map.get(user).getAnswer(user);
+
+        return null;
+    }
+
+    public AnswerBoard create(User user){
+        if(map.containsKey(user))
+            return null;
 
         if (getOld() == null || getOld().equals(user)){
             setOld(user);
@@ -38,9 +47,7 @@ public class GameManager {
         if (!map.containsKey(user))
             return null;
         var game = map.get(user);
-        if(!game.move(user, turn))
-            return null;
-        return game.getAnswer(user);
+        return game.move(user, turn);
     }
     public AnswerBoard endGame(User user){
         var answer = map.remove(user).getAnswer(user);
@@ -50,4 +57,10 @@ public class GameManager {
     }
 
 
+    public AnswerBoard createAI(User user) {
+        map.put(user, new GameWithAI(user));
+        val res = map.get(user).getAnswer(user);
+        res.setPen(Board.START_PEN);
+        return res;
+    }
 }

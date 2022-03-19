@@ -1,6 +1,11 @@
 package ru.lytvest.chess;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.val;
+
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Board {
 
@@ -46,7 +51,10 @@ public class Board {
     }
 
     public char get(Position position) {
-        return arr.charAt(getIndex(position));
+        int index = getIndex(position);
+        if (index >= arr.length())
+            System.err.println("index of " + index + " board "+ arr);
+        return arr.charAt(index);
     }
 
     public Board moved(Move move) {
@@ -398,7 +406,8 @@ public class Board {
     public static final String START_PEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
     public static final Board START = fromPen(START_PEN);
     public static final String EMPTY_PEN = "8/8/8/8/8/8/8/8 w KQkq - 0 1";
-    public static final Board EMPTY = fromPen(EMPTY_PEN);;
+    public static final Board EMPTY = fromPen(EMPTY_PEN);
+    ;
 
     public static Board fromPen(String pen) {
         String[] ss = pen.split(" ");
@@ -436,7 +445,245 @@ public class Board {
 
     }
 
+    float score() {
+        float sum = 0;
+        for (int i = 0; i < arr.length(); i++) {
+            val pos = indexToPos(i);
+            switch (arr.charAt(i)) {
+                case 'P':
+                    sum += 10 + (isWhite ? pawnEvalWhite[pos.y][pos.x] : pawnEvalBlack[pos.y][pos.x]);
+                    break;
+                case 'R':
+                    sum += 50 + (isWhite ? rookEvalWhite[pos.y][pos.x] : rookEvalBlack[pos.y][pos.x]);
+                    break;
+                case 'N':
+                    sum += 30 + (knightEval[pos.y][pos.x]);
+                    break;
+                case 'B':
+                    sum += 30 + (isWhite ? bishopEvalWhite[pos.y][pos.x] : bishopEvalBlack[pos.y][pos.x]);
+                    break;
+                case 'Q':
+                    sum += 90 + evalQueen[pos.y][pos.x];
+                    break;
+                case 'K':
+                    sum += 900 + (isWhite ? kingEvalWhite[pos.y][pos.x] : kingEvalBlack[pos.y][pos.x]);
+                    break;
+                case 'p':
+                    sum -= 10 - (isWhite ? pawnEvalWhite[pos.y][pos.x] : pawnEvalBlack[pos.y][pos.x]);
+                    break;
+                case 'r':
+                    sum -= 50 - (isWhite ? rookEvalWhite[pos.y][pos.x] : rookEvalBlack[pos.y][pos.x]);
+                    break;
+                case 'n':
+                    sum -= 30 - (knightEval[pos.y][pos.x]);
+                    break;
+                case 'b':
+                    sum -= 30 - (isWhite ? bishopEvalWhite[pos.y][pos.x] : bishopEvalBlack[pos.y][pos.x]);
+                    break;
+                case 'q':
+                    sum -= 90 - evalQueen[pos.y][pos.x];
+                    break;
+                case 'k':
+                    sum -= 900 - (isWhite ? kingEvalWhite[pos.y][pos.x] : kingEvalBlack[pos.y][pos.x]);
+                    break;
+            }
+        }
+        if (isWhite)
+            return sum;
+        return -sum;
+    }
+    private Random rand = new Random();
+    public Move bestTurn(int depth) {
 
+        val list = filteredMovies();
+        if (list.isEmpty())
+            return null;
+        ArrayList<Move> bests = new ArrayList<>();
+        float max = Float.MIN_VALUE;
+        for (val move : list) {
+            float sc = bestScoreFor(moved(move), depth, false);
+            System.out.println("sc " + sc + " -:" + move);
+            if (max < sc || bests.isEmpty()) {
+                max = sc;
+                bests.clear();
+            }
+            if (max == sc){
+                bests.add(move);
+            }
+        }
+        return bests.get(rand.nextInt(bests.size()));
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class F {
+        Move move;
+        float sc;
+    }
+
+    static float bestScoreFor(Board board, int depth, boolean isMax) {
+        if (depth <= 0)
+            return board.score();
+
+        ArrayList<F> list = new ArrayList<>();
+
+
+        for (val move : board.filteredMovies()) {
+            float sc = board.moved(move).score();
+            list.add(new F(move, sc));
+        }
+        if (list.isEmpty())
+            return 0;
+
+        float best;
+        if (isMax) {
+            list.sort((o1, o2) -> Float.compare(o2.sc, o1.sc));
+            best = list.get(0).sc;
+            F s = list.get(list.size() / 2);
+
+            for (F f : list) {
+                if (f.sc < s.sc)
+                    break;
+                float ns = bestScoreFor(board.moved(f.move), depth - 1, !isMax);
+                if (ns > best)
+                    best = ns;
+            }
+
+        } else {
+            list.sort((o1, o2) -> Float.compare(o1.sc, o2.sc));
+            best = list.get(0).sc;
+            F s = list.get(list.size() / 2);
+            for (F f : list) {
+                if (f.sc > s.sc)
+                    break;
+                float ns = bestScoreFor(board.moved(f.move), depth - 1, !isMax);
+                if (ns < best)
+                    best = ns;
+            }
+        }
+        return best;
+    }
+
+
+    static double[][] pawnEvalWhite = new double[][]{
+            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+            {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0},
+            {1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0},
+            {0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5},
+            {0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0},
+            {0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5},
+            {0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5},
+            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    };
+
+    static double[][] pawnEvalBlack = new double[][]{
+            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+            {0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5},
+            {0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5},
+            {0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0},
+            {0.5, 0.5, 1.0, 2.5, 2.5, 1.0, 0.5, 0.5},
+            {1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0},
+            {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0},
+            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    };
+
+    double[][] knightEval = new double[][]
+            {
+                    {-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0},
+                    {-4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0},
+                    {-3.0, 0.0, 1.0, 1.5, 1.5, 1.0, 0.0, -3.0},
+                    {-3.0, 0.5, 1.5, 2.0, 2.0, 1.5, 0.5, -3.0},
+                    {-3.0, 0.0, 1.5, 2.0, 2.0, 1.5, 0.0, -3.0},
+                    {-3.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -3.0},
+                    {-4.0, -2.0, 0.0, 0.5, 0.5, 0.0, -2.0, -4.0},
+                    {-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0}
+            };
+
+    double[][] bishopEvalWhite = new double[][]{
+            {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0},
+            {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0},
+            {-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},
+            {-1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -1.0},
+            {-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, -1.0},
+            {-1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0},
+            {-1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, -1.0},
+            {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0}
+    };
+
+    double[][] bishopEvalBlack = new double[][]{
+
+            {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0},
+            {-1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, -1.0},
+            {-1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0},
+            {-1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, -1.0},
+            {-1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -1.0},
+            {-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},
+            {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0},
+            {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0},
+    };
+
+    double[][] rookEvalWhite = new double[][]{
+            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+            {0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0}
+    };
+
+    double[][] rookEvalBlack = new double[][]{
+
+            {0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
+            {0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5},
+            {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+    };
+
+    double[][] evalQueen = new double[][]{
+            {-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0},
+            {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0},
+            {-1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0},
+            {-0.5, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -0.5},
+            {0.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -0.5},
+            {-1.0, 0.5, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0},
+            {-1.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.0, -1.0},
+            {-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}
+    };
+
+    double[][] kingEvalWhite = new double[][]{
+
+            {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+            {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+            {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+            {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+            {-2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0},
+            {-1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0},
+            {2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0},
+            {2.0, 3.0, 1.0, 0.0, 0.0, 1.0, 3.0, 2.0}
+    };
+
+    double[][] kingEvalBlack = new double[][]{
+            {2.0, 3.0, 1.0, 0.0, 0.0, 1.0, 3.0, 2.0},
+            {2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0},
+            {-1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0},
+            {-2.0, -3.0, -3.0, -4.0, -4.0, -3.0, -3.0, -2.0},
+            {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+            {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+            {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+            {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
+    };
+
+    public static void main(String[] args) {
+        Board b = Board.fromPen("8/8/8/8/8/p1r5/1P6/8 w KQkq - 0 1");
+        System.out.println(b.filteredMovies());
+        System.out.println(b.bestTurn(2));
+    }
 }
 
 

@@ -22,7 +22,6 @@ public class Starter extends ApplicationAdapter {
 	public void render () {
 		ScreenUtils.clear(0.08627451f, 0.08235294f, 0.07058824f, 1);
 		Scenes.update(Gdx.graphics.getDeltaTime());
-		HttpController.update(Gdx.graphics.getDeltaTime());
 	}
 
 	@Override

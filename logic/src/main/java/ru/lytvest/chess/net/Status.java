@@ -13,6 +13,7 @@ public class Status {
     private String status;
     private String message;
     private AnswerBoard game;
+    private String login;
 
     public boolean isOk(){
         return Objects.equals(status, "ok");

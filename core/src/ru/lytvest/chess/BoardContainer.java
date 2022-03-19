@@ -34,6 +34,7 @@ public class BoardContainer extends Group {
     private float startX = 0f;
     private float startY = 0f;
     private boolean canUpdated = true;
+    private boolean canServerUpdate = false;
 
     public BoardContainer(Board board, boolean isWhite) {
         this.board = board;
@@ -41,6 +42,31 @@ public class BoardContainer extends Group {
         addListener(new MoveListener());
         createCells();
         updateBoard(board, null);
+    }
+    private float timer = 0f;
+    private float timerMax = 1f;
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+        timer += delta;
+        if (canServerUpdate && timer >= timerMax){
+            timer = 0;
+            updateBoardFormServer();
+        }
+    }
+
+    public void setCanServerUpdate(boolean can){
+        canServerUpdate =can;
+        timer = 0;
+    }
+
+    private void updateBoardFormServer(){
+        HttpController.getInstance().getBoard((ans) -> {
+            if (ans.getMove() != null){
+                updateBoard(Board.fromPen(ans.getPen()), Move.from(ans.getMove()));
+            }
+        });
     }
 
     private void createFigure(char ch, Position position) {
@@ -57,6 +83,7 @@ public class BoardContainer extends Group {
         img.setName("" + ch);
         figures.put(position, img);
         addActor(img);
+        updateFigurePositionAndSize(img, position);
     }
     private Position toDisplayPos(Position position) {
         if (!isWhite)
@@ -106,6 +133,7 @@ public class BoardContainer extends Group {
                 }
             }
         }
+
     }
     private void createCells(){
         for (int i = 0; i < 8; i++) {
@@ -167,15 +195,21 @@ public class BoardContainer extends Group {
         }
     }
 
-    private void updateFigurePositionAndSize(){
+    private void updateFiguresPositionsAndSizes(){
         for(Map.Entry<Position, Image> entry : figures.entrySet()) {
-            SizeToAction action = new SizeToAction();
-            action.setSize(size, size);
-            action.setDuration(0.3f);
-            entry.getValue().addAction(action);
-            Position ip = toDisplayPos(entry.getKey());
-            entry.getValue().setPosition(startX + ip.x * size, startY + ip.y * size);
+            Image fig = entry.getValue();
+            Position pos = entry.getKey();
+            updateFigurePositionAndSize(fig, pos);
         }
+    }
+
+    private void updateFigurePositionAndSize(Image fig, Position pos) {
+        SizeToAction action = new SizeToAction();
+        action.setSize(size, size);
+        action.setDuration(0.3f);
+        fig.addAction(action);
+        Position ip = toDisplayPos(pos);
+        fig.setPosition(startX + ip.x * size, startY + ip.y * size);
     }
 
     @Override
@@ -190,7 +224,7 @@ public class BoardContainer extends Group {
             startY = getHeight() / 2 - getWidth() / 2;
 
         updateCellSize();
-        updateFigurePositionAndSize();
+        updateFiguresPositionsAndSizes();
     }
 
     private void setGreenColor(Position position){
@@ -285,7 +319,7 @@ public class BoardContainer extends Group {
                 clearCellsColor();
                 Move move = new Move(old, clickPosition);
                 old = null;
-                if(!board.canMove(move) && board.isWhite != isWhite)
+                if(!board.canMove(move) || board.isWhite != isWhite)
                     return;
 
                 board = board.moved(move);
@@ -293,7 +327,8 @@ public class BoardContainer extends Group {
 
                 updateBoard(board, move);
                 canUpdated = false;
-                HttpController.move(move.toString(), (answer) -> {
+                timer = 0f;
+                HttpController.getInstance().move(move.toString(), (answer) -> {
                     Gdx.app.log(getClass().getSimpleName(), "move to " + move + " pen:" + answer.getPen());
                     canUpdated = true;
                     updateBoard(Board.fromPen(answer.getPen()), null);

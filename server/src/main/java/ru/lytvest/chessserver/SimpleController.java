@@ -1,5 +1,8 @@
 package ru.lytvest.chessserver;
 
+import lombok.val;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +17,8 @@ public class SimpleController {
 
     @Autowired
     private UserRepository users;
+
+    Logger log = LoggerFactory.getLogger(SimpleController.class);
 
     private GameManager gameManager = new GameManager();
 
@@ -34,6 +39,7 @@ public class SimpleController {
             users.save(new User(contentRequest));
             model.addAttribute("status", "ok");
             model.addAttribute("login", contentRequest.user);
+            log.info("register user " + contentRequest);
         }
         return "jsonTemplate";
     }
@@ -66,12 +72,33 @@ public class SimpleController {
     @PostMapping("getBoard")
     public String findGame(Model model, @RequestBody ContentRequest contentRequest){
         User user = findUser(model, contentRequest);
-        System.out.println("get board for " + user);
+        log.info("get board for " + user);
         if (user == null){
             return "jsonTemplate";
         }
 
         var answer = gameManager.findGame(user);
+        if (answer != null) {
+            model.addAttribute("game", answer);
+            model.addAttribute("status", "ok");
+        } else {
+            model.addAttribute("status", "fail");
+            model.addAttribute("message", "find enemy");
+        }
+
+        return "jsonTemplate";
+    }
+
+    @PostMapping("createAI")
+    public String createAI(Model model, @RequestBody ContentRequest contentRequest){
+        User user = findUser(model, contentRequest);
+
+        log.info("create ai for " + user);
+        if (user == null){
+            return "jsonTemplate";
+        }
+
+        val answer = gameManager.createAI(user);
         if (answer != null) {
             model.addAttribute("game", answer);
             model.addAttribute("status", "ok");

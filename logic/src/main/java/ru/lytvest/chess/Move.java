@@ -20,4 +20,12 @@ public class Move {
             fig = s.charAt(4);
         return new Move(Position.from(s.substring(0, 2)), Position.from(s.substring(2, 4)), fig);
     }
+    @Override
+    public String toString(){
+        if (figure == '-')
+            return "" + start + end;
+        else
+            return "" + start + end + figure;
+    }
+
 }
