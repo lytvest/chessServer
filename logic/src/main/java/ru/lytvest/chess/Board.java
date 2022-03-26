@@ -5,11 +5,12 @@ import lombok.Data;
 import lombok.val;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 public class Board {
 
-    public final String arr;
+    public char [][] arr;
     public final Boolean isWhite;
     public final Boolean whiteOO;
     public final Boolean whiteOOO;
@@ -18,7 +19,7 @@ public class Board {
     public final Position oldPawn;
     public final int numberCourse;
 
-    public Board(String arr, Boolean isWhite, Boolean whiteOO, Boolean whiteOOO, Boolean blackOO, Boolean blackOOO, Position oldPawn, int numberCourse) {
+    public Board(char [][] arr, Boolean isWhite, Boolean whiteOO, Boolean whiteOOO, Boolean blackOO, Boolean blackOOO, Position oldPawn, int numberCourse) {
         this.arr = arr;
         this.isWhite = isWhite;
         this.whiteOO = whiteOO;
@@ -29,60 +30,47 @@ public class Board {
         this.numberCourse = numberCourse;
     }
 
-    private Board(String arr) {
+    private Board(char [][] arr) {
         this(arr, true, true, true, true, true, null, 1);
     }
 
-    public int getIndex(int x, int y) {
-        return y * 8 + x;
-    }
-
-    public int getIndex(Position position) {
-        return position.y * 8 + position.x;
-    }
-
-    public Position indexToPos(int index) {
-        return Position.of(index % 8, index / 8);
-    }
 
 
     public char get(int x, int y) {
-        return arr.charAt(getIndex(x, y));
+        return arr[y][x];
     }
 
     public char get(Position position) {
-        int index = getIndex(position);
-        if (index >= arr.length())
-            System.err.println("index of " + index + " board "+ arr);
-        return arr.charAt(index);
+        return arr[position.y][position.x];
     }
 
     public Board moved(Move move) {
+        val old = copy();
 
         char fig = get(move.start);
 
-        String narr = movedString(arr, move);
+        movedNotControl(move);
         if (fig == 'k' && move.end.equals(Position.of(6, 0)) && move.start.equals(Position.of(4, 0))) {
-            narr = movedString(narr, new Move(Position.of(7, 0), Position.of(5, 0), get(7, 0)));
+            movedNotControl(new Move(Position.of(7, 0), Position.of(5, 0), get(7, 0)));
         }
         if (fig == 'k' && move.end.equals(Position.of(2, 0)) && move.start.equals(Position.of(4, 0))) {
-            narr = movedString(narr, new Move(Position.of(0, 0), Position.of(3, 0), get(0, 0)));
+            movedNotControl(new Move(Position.of(0, 0), Position.of(3, 0), get(0, 0)));
         }
         if (fig == 'K' && move.end.equals(Position.of(6, 7)) && move.start.equals(Position.of(4, 7))) {
-            narr = movedString(narr, new Move(Position.of(7, 7), Position.of(5, 7), get(7, 7)));
+            movedNotControl(new Move(Position.of(7, 7), Position.of(5, 7), get(7, 7)));
         }
         if (fig == 'K' && move.end.equals(Position.of(2, 7)) && move.start.equals(Position.of(4, 7))) {
-            narr = movedString(narr, new Move(Position.of(0, 7), Position.of(3, 7), get(0, 7)));
+            movedNotControl(new Move(Position.of(0, 7), Position.of(3, 7), get(0, 7)));
         }
 
         if (Character.toLowerCase(fig) == 'p' && move.end.equals(oldPawn)) {
-            narr = setInPos(narr, Position.of(move.end.x, move.start.y), ' ');
+            set(Position.of(move.end.x, move.start.y), ' ');
         }
         if (fig == 'P' && move.end.y == 0) {
-            narr = setInPos(narr, move.end, Character.toUpperCase(move.figure));
+            set(move.end, Character.toUpperCase(move.figure));
         }
         if (fig == 'p' && move.end.y == 7) {
-            narr = setInPos(narr, move.end, Character.toLowerCase(move.figure));
+            set(move.end, Character.toLowerCase(move.figure));
         }
 
         Position oldPawn = null;
@@ -95,8 +83,8 @@ public class Board {
         if (!isWhite)
             ncourse += 1;
 
-        return new Board(
-                narr,
+        val res = new Board(
+                arr,
                 !isWhite,
                 whiteOO && fig != 'K' && !move.end.equals(Position.of(7, 7)) && !move.start.equals(Position.of(7, 7)),
                 whiteOOO && fig != 'K' && !move.end.equals(Position.of(0, 7)) && !move.start.equals(Position.of(0, 7)),
@@ -105,18 +93,26 @@ public class Board {
                 oldPawn,
                 ncourse
         );
-
+        arr = old;
+        return res;
     }
 
-    String movedString(String arr, Move move) {
+    char [][] copy(){
+        char [][] narr = Arrays.copyOf(arr, arr.length);
+        for (int i = 0; i < narr.length; i++) {
+            narr[i] = Arrays.copyOf(arr[i], arr[i].length);
+        }
+        return narr;
+    }
+
+    void movedNotControl(Move move) {
         char fig = get(move.start);
-        String s1 = setInPos(arr, move.start, ' ');
-        return setInPos(s1, move.end, fig);
+        set(move.start, ' ');
+        set(move.end, fig);
     }
 
-    String setInPos(String ss, Position position, char ch) {
-        int index = getIndex(position);
-        return ss.substring(0, index) + ch + ss.substring(index + 1);
+    void set(Position position, char ch) {
+        arr[position.y][position.x] = ch;
     }
 
     void pawnMoves(Position position, ArrayList<Position> res) {
@@ -278,7 +274,7 @@ public class Board {
                 queenMoves(position, res);
                 break;
         }
-        ArrayList<Move> res2 = new ArrayList<Move>(res.size());
+        ArrayList<Move> res2 = new ArrayList<>(res.size());
         for (Position re : res) {
             res2.add(new Move(position, re));
         }
@@ -286,7 +282,7 @@ public class Board {
     }
 
     ArrayList<Position> enemyFigures() {
-        ArrayList<Position> res = new ArrayList<Position>();
+        ArrayList<Position> res = new ArrayList<>();
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 if (get(x, y) != ' ' && Character.isUpperCase(get(x, y)) != isWhite)
@@ -308,7 +304,13 @@ public class Board {
     }
 
     Position findPos(char fig) {
-        return indexToPos(arr.indexOf(fig));
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                if(arr[y][x] == fig)
+                    return Position.of(x, y);
+            }
+        }
+        return null;
     }
 
     boolean isWinner() {
@@ -353,29 +355,30 @@ public class Board {
     }
 
 
-    public String toPen() {
-        return toPen(arr);
-    }
 
-    String toPen(String arr) {
+    public String toPen() {
         StringBuilder sb = new StringBuilder();
 
         int countSpace = 0;
-        for (int i = 0; i < arr.length(); i++) {
-            char ch = arr.charAt(i);
-            if ((ch != ' ' || i % 8 == 0) && countSpace > 0) {
-                sb.append(countSpace);
-                countSpace = 0;
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                char ch = get(x, y);
+                if ((ch != ' ' || x == 0) && countSpace > 0) {
+                    sb.append(countSpace);
+                    countSpace = 0;
+                }
+                if (x == 0 && y != 0)
+                    sb.append('/');
+
+
+                if (ch != ' ')
+                    sb.append(ch);
+                else
+                    countSpace++;
             }
-            if (i % 8 == 0 && i != 0)
-                sb.append('/');
-
-
-            if (ch != ' ')
-                sb.append(ch);
-            else
-                countSpace++;
         }
+        if (countSpace > 0)
+            sb.append(countSpace);
         sb.append(' ');
         if (isWhite) sb.append('w');
         else sb.append('b');
@@ -411,30 +414,35 @@ public class Board {
 
     public static Board fromPen(String pen) {
         String[] ss = pen.split(" ");
-        StringBuilder sb = new StringBuilder();
-        for (String line : ss[0].split("/")) {
-            for (int i = 0; i < line.length(); i++) {
-                if (Character.isDigit(line.charAt(i))) {
-                    int count = Integer.parseInt("" + line.charAt(i));
-                    for (int j = 0; j < count; j++) {
-                        sb.append(" ");
+        char [][] arr = new char[8][];
+        String[] lines = ss[0].split("/");
+        for (int i = 0; i < 8; i++) {
+            arr[i] = new char[8];
+            int j = 0;
+            for (int k = 0; k < lines[i].length(); k++) {
+                char ch = lines[i].charAt(k);
+                if (Character.isDigit(ch)) {
+                    int count = Integer.parseInt("" + ch);
+                    for (int p = 0; p < count; p++) {
+                        arr[i][j++] = ' ';
                     }
                 } else {
-                    sb.append(line.charAt(i));
+                    arr[i][j++] = ch;
                 }
             }
         }
 
+
         if (ss.length < 6) {
             System.out.println("no correct pen");
-            return new Board(sb.toString());
+            return new Board(arr);
         }
         Position old = null;
         if (ss[3].length() == 2)
             old = Position.from(ss[3]);
 
         return new Board(
-                sb.toString(),
+                arr,
                 ss[1].contains("w"),
                 ss[2].contains("K"),
                 ss[2].contains("Q"),
@@ -447,45 +455,46 @@ public class Board {
 
     float score() {
         float sum = 0;
-        for (int i = 0; i < arr.length(); i++) {
-            val pos = indexToPos(i);
-            switch (arr.charAt(i)) {
-                case 'P':
-                    sum += 10 + (isWhite ? pawnEvalWhite[pos.y][pos.x] : pawnEvalBlack[pos.y][pos.x]);
-                    break;
-                case 'R':
-                    sum += 50 + (isWhite ? rookEvalWhite[pos.y][pos.x] : rookEvalBlack[pos.y][pos.x]);
-                    break;
-                case 'N':
-                    sum += 30 + (knightEval[pos.y][pos.x]);
-                    break;
-                case 'B':
-                    sum += 30 + (isWhite ? bishopEvalWhite[pos.y][pos.x] : bishopEvalBlack[pos.y][pos.x]);
-                    break;
-                case 'Q':
-                    sum += 90 + evalQueen[pos.y][pos.x];
-                    break;
-                case 'K':
-                    sum += 900 + (isWhite ? kingEvalWhite[pos.y][pos.x] : kingEvalBlack[pos.y][pos.x]);
-                    break;
-                case 'p':
-                    sum -= 10 - (isWhite ? pawnEvalWhite[pos.y][pos.x] : pawnEvalBlack[pos.y][pos.x]);
-                    break;
-                case 'r':
-                    sum -= 50 - (isWhite ? rookEvalWhite[pos.y][pos.x] : rookEvalBlack[pos.y][pos.x]);
-                    break;
-                case 'n':
-                    sum -= 30 - (knightEval[pos.y][pos.x]);
-                    break;
-                case 'b':
-                    sum -= 30 - (isWhite ? bishopEvalWhite[pos.y][pos.x] : bishopEvalBlack[pos.y][pos.x]);
-                    break;
-                case 'q':
-                    sum -= 90 - evalQueen[pos.y][pos.x];
-                    break;
-                case 'k':
-                    sum -= 900 - (isWhite ? kingEvalWhite[pos.y][pos.x] : kingEvalBlack[pos.y][pos.x]);
-                    break;
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                switch (arr[y][x]) {
+                    case 'P':
+                        sum += 10 + (isWhite ? pawnEvalWhite[y][x] : pawnEvalBlack[y][x]);
+                        break;
+                    case 'R':
+                        sum += 50 + (isWhite ? rookEvalWhite[y][x] : rookEvalBlack[y][x]);
+                        break;
+                    case 'N':
+                        sum += 30 + (knightEval[y][x]);
+                        break;
+                    case 'B':
+                        sum += 30 + (isWhite ? bishopEvalWhite[y][x] : bishopEvalBlack[y][x]);
+                        break;
+                    case 'Q':
+                        sum += 90 + evalQueen[y][x];
+                        break;
+                    case 'K':
+                        sum += 900 + (isWhite ? kingEvalWhite[y][x] : kingEvalBlack[y][x]);
+                        break;
+                    case 'p':
+                        sum -= 10 - (isWhite ? pawnEvalWhite[y][x] : pawnEvalBlack[y][x]);
+                        break;
+                    case 'r':
+                        sum -= 50 - (isWhite ? rookEvalWhite[y][x] : rookEvalBlack[y][x]);
+                        break;
+                    case 'n':
+                        sum -= 30 - (knightEval[y][x]);
+                        break;
+                    case 'b':
+                        sum -= 30 - (isWhite ? bishopEvalWhite[y][x] : bishopEvalBlack[y][x]);
+                        break;
+                    case 'q':
+                        sum -= 90 - evalQueen[y][x];
+                        break;
+                    case 'k':
+                        sum -= 900 - (isWhite ? kingEvalWhite[y][x] : kingEvalBlack[y][x]);
+                        break;
+                }
             }
         }
         if (isWhite)
@@ -681,6 +690,8 @@ public class Board {
 
     public static void main(String[] args) {
         Board b = Board.fromPen("8/8/8/8/8/p1r5/1P6/8 w KQkq - 0 1");
+        System.out.println(b.toPen());
+        System.out.println(b.filteredMovies());
         System.out.println(b.filteredMovies());
         System.out.println(b.bestTurn(2));
     }

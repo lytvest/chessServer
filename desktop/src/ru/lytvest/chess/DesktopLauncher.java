@@ -16,7 +16,7 @@ public class DesktopLauncher {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
 		config.setForegroundFPS(60);
 		config.setWindowSizeLimits(16 * 40, 9 * 40, 16 * 170, 9 * 170);
-		config.setWindowedMode(10 * 90, 9 * 90);
+		config.setWindowedMode(13 * 90, 9 * 90);
 		new Lwjgl3Application(new Starter(), config);
 	}
 }

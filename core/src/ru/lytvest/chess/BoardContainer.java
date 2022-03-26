@@ -35,6 +35,7 @@ public class BoardContainer extends Group {
     private float startY = 0f;
     private boolean canUpdated = true;
     private boolean canServerUpdate = false;
+    private Image bgTimeYou = new Image(Scenes.getSkin(), "white");
 
     public BoardContainer(Board board, boolean isWhite) {
         this.board = board;
@@ -42,7 +43,9 @@ public class BoardContainer extends Group {
         addListener(new MoveListener());
         createCells();
         updateBoard(board, null);
+        addActor(bgTimeYou);
     }
+
     private float timer = 0f;
     private float timerMax = 1f;
 
@@ -50,20 +53,20 @@ public class BoardContainer extends Group {
     public void act(float delta) {
         super.act(delta);
         timer += delta;
-        if (canServerUpdate && timer >= timerMax){
+        if (canServerUpdate && timer >= timerMax) {
             timer = 0;
             updateBoardFormServer();
         }
     }
 
-    public void setCanServerUpdate(boolean can){
-        canServerUpdate =can;
+    public void setCanServerUpdate(boolean can) {
+        canServerUpdate = can;
         timer = 0;
     }
 
-    private void updateBoardFormServer(){
+    private void updateBoardFormServer() {
         HttpController.getInstance().getBoard((ans) -> {
-            if (ans.getMove() != null){
+            if (ans.getMove() != null) {
                 updateBoard(Board.fromPen(ans.getPen()), Move.from(ans.getMove()));
             }
         });
@@ -71,8 +74,8 @@ public class BoardContainer extends Group {
 
     private void createFigure(char ch, Position position) {
         Gdx.app.log(getClass().getSimpleName(), "createFigure " + ch + " in pos " + position);
-        String name =  "chess/w" + ch;
-        if(!Character.isUpperCase(ch)) {
+        String name = "chess/w" + ch;
+        if (!Character.isUpperCase(ch)) {
             name = "chess/b" + Character.toUpperCase(ch);
         }
         TextureRegion reg = Scenes.getSkin().getRegion(name);
@@ -85,12 +88,14 @@ public class BoardContainer extends Group {
         addActor(img);
         updateFigurePositionAndSize(img, position);
     }
+
     private Position toDisplayPos(Position position) {
         if (!isWhite)
             return Position.of(7 - position.x, position.y);
         return Position.of(position.x, 7 - position.y);
     }
-    private void moveFigure(Position old, Position newPosition){
+
+    private void moveFigure(Position old, Position newPosition) {
         if (!figures.containsKey(old))
             return;
         Image img = figures.get(old);
@@ -105,37 +110,38 @@ public class BoardContainer extends Group {
         Gdx.app.log(getClass().getSimpleName(), "" + img + " count actions: " + img.getActions().size);
     }
 
-    private void removeFigure(Position position){
-        if(figures.containsKey(position)){
+    private void removeFigure(Position position) {
+        if (figures.containsKey(position)) {
             Image img = figures.get(position);
             figures.remove(position);
             removeActor(img);
         }
     }
 
-    public void updateBoard(Board board, Move move){
-        if(! canUpdated) {
-            Gdx.app.log(getClass().getSimpleName(), "update cancel move:"+ move + " " + board.toPen());
+    public void updateBoard(Board board, Move move) {
+        if (!canUpdated) {
+            Gdx.app.log(getClass().getSimpleName(), "update cancel move:" + move + " " + board.toPen());
             return;
         }
         this.board = board;
-        if (move != null){
+        if (move != null) {
             moveFigure(move.start, move.end);
         }
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
                 val pos = Position.of(x, y);
-                if(board.get(pos) == ' ' && figures.containsKey(pos)){
+                if (board.get(pos) == ' ' && figures.containsKey(pos)) {
                     removeFigure(pos);
                 }
-                if(board.get(pos) != ' ' && !figures.containsKey(pos)){
+                if (board.get(pos) != ' ' && !figures.containsKey(pos)) {
                     createFigure(board.get(pos), pos);
                 }
             }
         }
 
     }
-    private void createCells(){
+
+    private void createCells() {
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 Image img = new Image(Scenes.getSkin(), "white");
@@ -166,22 +172,24 @@ public class BoardContainer extends Group {
             addActor(num);
         }
     }
-    private void clearCellsColor(){
-        for(Map.Entry<Position, Image> entry : cells.entrySet()){
+
+    private void clearCellsColor() {
+        for (Map.Entry<Position, Image> entry : cells.entrySet()) {
             if ((entry.getKey().x + entry.getKey().y) % 2 == 0)
                 entry.getValue().setColor(blackColor);
             else
                 entry.getValue().setColor(whiteColor);
         }
     }
-    private void updateCellSize(){
-        for(Map.Entry<Position, Image> entry : cells.entrySet()){
+
+    private void updateCellSize() {
+        for (Map.Entry<Position, Image> entry : cells.entrySet()) {
             Position position = toDisplayPos(entry.getKey());
             entry.getValue().setBounds(startX + position.x * size, startY + position.y * size, size, size);
         }
         String letters = "abcdefgh";
         String nums = "12345678";
-        if (!isWhite){
+        if (!isWhite) {
             letters = "hgfedcba";
             nums = "87654321";
         }
@@ -191,12 +199,12 @@ public class BoardContainer extends Group {
             label.setPosition(startX + size * i + 6f, startY);
 
             Label num = labels.get(nums.charAt(i));
-            num.setPosition(getWidth() - startX - 3f - num.getPrefWidth(), startY + size * (1 + i) - num.getPrefHeight());
+            num.setPosition(startX + size * 8 - 3f - num.getPrefWidth(), startY + size * (1 + i) - num.getPrefHeight());
         }
     }
 
-    private void updateFiguresPositionsAndSizes(){
-        for(Map.Entry<Position, Image> entry : figures.entrySet()) {
+    private void updateFiguresPositionsAndSizes() {
+        for (Map.Entry<Position, Image> entry : figures.entrySet()) {
             Image fig = entry.getValue();
             Position pos = entry.getKey();
             updateFigurePositionAndSize(fig, pos);
@@ -216,19 +224,46 @@ public class BoardContainer extends Group {
     protected void sizeChanged() {
         super.sizeChanged();
 
-        size = Math.min(getWidth(), getHeight()) / 8f;
+        float boardSize = 0f;
+        float timeHeight = getWidth() * 0.07f;
 
-        if (getWidth() > getHeight())
-            startX = getWidth() / 2 - getHeight() / 2;
-        else
-            startY = getHeight() / 2 - getWidth() / 2;
+        if (getHeight() >= getWidth() - timeHeight * 2) {
+
+            if (getHeight() >= timeHeight * 2 + getWidth()) {
+                boardSize = getWidth();
+            } else {
+                boardSize = getHeight() - timeHeight * 2;
+            }
+
+
+            startY = getHeight() / 2 - boardSize / 2;
+            startX = getWidth() / 2 - boardSize / 2;
+            size = boardSize / 8f;
+            Gdx.app.log(getClass().getSimpleName(), "startX:" + startX + " startY:" + startY + " size:" + size);
+
+
+            bgTimeYou.setBounds(startX, startY - timeHeight, getWidth() - 2 * startX, timeHeight);
+        } else {
+            float widthTime = getHeight() * 0.3f;
+            if (getWidth() >= getHeight() - widthTime){
+                boardSize = getHeight();
+            } else {
+                boardSize = getWidth() - widthTime;
+            }
+            startX = (getWidth() - widthTime) / 2 - boardSize / 2;
+            startY = 0;
+            size = boardSize / 8f;
+            Gdx.app.log(getClass().getSimpleName(), "startX:" + startX + " startY:" + startY + " size:" + size);
+
+            bgTimeYou.setBounds(startX + boardSize, boardSize / 2 - timeHeight, boardSize, timeHeight);
+        }
 
         updateCellSize();
         updateFiguresPositionsAndSizes();
     }
 
-    private void setGreenColor(Position position){
-        if (cells.containsKey(position)){
+    private void setGreenColor(Position position) {
+        if (cells.containsKey(position)) {
             if ((position.x + position.y) % 2 == 0)
                 cells.get(position).setColor(blackColorGreen);
             else
@@ -237,7 +272,7 @@ public class BoardContainer extends Group {
     }
 
 
-    class MoveListener extends ClickListener{
+    class MoveListener extends ClickListener {
 
 
         Position old = null;
@@ -269,18 +304,19 @@ public class BoardContainer extends Group {
 
             return res;
         }
+
         public static final float TOUCH_MOVE = 10f;
 
         @Override
         public void touchDragged(InputEvent event, float x, float y, int pointer) {
             super.touchDragged(event, x, y, pointer);
-            if(old != null && (Math.abs(x - tdx) > TOUCH_MOVE || Math.abs(y - tdy) > TOUCH_MOVE)  )
+            if (old != null && (Math.abs(x - tdx) > TOUCH_MOVE || Math.abs(y - tdy) > TOUCH_MOVE))
                 oldActor.setPosition(sx + x, sy + y);
         }
 
         @Override
         public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-            if (old != null  ) {
+            if (old != null) {
                 Position clickPosition = getClickPos(x, y);
                 if (!board.canMove(new Move(old, clickPosition)) || board.isWhite != isWhite) {
                     MoveToAction action = new MoveToAction();
@@ -319,7 +355,7 @@ public class BoardContainer extends Group {
                 clearCellsColor();
                 Move move = new Move(old, clickPosition);
                 old = null;
-                if(!board.canMove(move) || board.isWhite != isWhite)
+                if (!board.canMove(move) || board.isWhite != isWhite)
                     return;
 
                 board = board.moved(move);
