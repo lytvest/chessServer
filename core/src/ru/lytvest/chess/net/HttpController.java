@@ -5,7 +5,7 @@ import com.badlogic.gdx.Net;
 import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter;
-import lombok.val;
+
 
 import java.util.Random;
 import java.util.function.Consumer;
@@ -30,15 +30,15 @@ public class HttpController {
                 .url(URL + path)
                 .content(json.toJson(content));
 
-        val request = builder.build();
+        Net.HttpRequest request = builder.build();
         Gdx.app.log(getClass().getSimpleName(), "send " + request.getUrl() + " " + request.getContent());
         Gdx.net.sendHttpRequest(request, new Net.HttpResponseListener() {
             @Override
             public void handleHttpResponse(Net.HttpResponse httpResponse) {
-                val res = httpResponse.getResultAsString();
+                String res = httpResponse.getResultAsString();
                 Gdx.app.log(getClass().getSimpleName(), "answer for " + request.getUrl() + " : " + res);
 
-                val status = json.fromJson(Status.class, res);
+                Status status = json.fromJson(Status.class, res);
                 if (status.isOk()) {
                     if (status.getGame() == null)
                         status.setGame(new AnswerBoard());

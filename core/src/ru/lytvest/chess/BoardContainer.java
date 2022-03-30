@@ -12,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.SizeToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import lombok.val;
 import ru.lytvest.chess.net.HttpController;
 
 import java.util.HashMap;
@@ -129,7 +128,7 @@ public class BoardContainer extends Group {
         }
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                val pos = Position.of(x, y);
+                Position pos = Position.of(x, y);
                 if (board.get(pos) == ' ' && figures.containsKey(pos)) {
                     removeFigure(pos);
                 }

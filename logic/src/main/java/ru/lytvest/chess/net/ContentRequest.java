@@ -1,16 +1,9 @@
 package ru.lytvest.chess.net;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
+
+
+
 public class ContentRequest {
     public String user;
     public String pass;
@@ -21,22 +14,36 @@ public class ContentRequest {
         this.pass = pass;
     }
 
-    private static MessageDigest hashed = null;
-    public static String sha(String pass) {
+    public ContentRequest(String user, String pass, String move) {
+        this.user = user;
+        this.pass = pass;
+        this.move = move;
+    }
 
-        String result = "no password";
-        try {
-            if (hashed == null) {
-                hashed = MessageDigest.getInstance("SHA-256");
-            }
-            hashed.reset();
-            hashed.update(pass.getBytes(StandardCharsets.UTF_8));
-            result = new String(hashed.digest());
-            //System.out.println("hashed " + hashed);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        System.out.println("pass=" + pass + " hash" + result);
-        return result;
+    public ContentRequest() {
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
+    }
+
+    public String getPass() {
+        return pass;
+    }
+
+    public void setPass(String pass) {
+        this.pass = pass;
+    }
+
+    public String getMove() {
+        return move;
+    }
+
+    public void setMove(String move) {
+        this.move = move;
     }
 }

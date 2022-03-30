@@ -1,8 +1,8 @@
 package ru.lytvest.chess;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.val;
+//import lombok.AllArgsConstructor;
+//import lombok.Data;
+//import lombok.val;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class Board {
 
-    public char [][] arr;
+    public char[][] arr;
     public final Boolean isWhite;
     public final Boolean whiteOO;
     public final Boolean whiteOOO;
@@ -19,7 +19,7 @@ public class Board {
     public final Position oldPawn;
     public final int numberCourse;
 
-    public Board(char [][] arr, Boolean isWhite, Boolean whiteOO, Boolean whiteOOO, Boolean blackOO, Boolean blackOOO, Position oldPawn, int numberCourse) {
+    public Board(char[][] arr, Boolean isWhite, Boolean whiteOO, Boolean whiteOOO, Boolean blackOO, Boolean blackOOO, Position oldPawn, int numberCourse) {
         this.arr = arr;
         this.isWhite = isWhite;
         this.whiteOO = whiteOO;
@@ -30,10 +30,9 @@ public class Board {
         this.numberCourse = numberCourse;
     }
 
-    private Board(char [][] arr) {
+    private Board(char[][] arr) {
         this(arr, true, true, true, true, true, null, 1);
     }
-
 
 
     public char get(int x, int y) {
@@ -45,7 +44,7 @@ public class Board {
     }
 
     public Board moved(Move move) {
-        val old = copy();
+        char[][] old = copy();
 
         char fig = get(move.start);
 
@@ -83,7 +82,7 @@ public class Board {
         if (!isWhite)
             ncourse += 1;
 
-        val res = new Board(
+        Board res = new Board(
                 arr,
                 !isWhite,
                 whiteOO && fig != 'K' && !move.end.equals(Position.of(7, 7)) && !move.start.equals(Position.of(7, 7)),
@@ -97,8 +96,8 @@ public class Board {
         return res;
     }
 
-    char [][] copy(){
-        char [][] narr = Arrays.copyOf(arr, arr.length);
+    char[][] copy() {
+        char[][] narr = Arrays.copyOf(arr, arr.length);
         for (int i = 0; i < narr.length; i++) {
             narr[i] = Arrays.copyOf(arr[i], arr[i].length);
         }
@@ -306,7 +305,7 @@ public class Board {
     Position findPos(char fig) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
-                if(arr[y][x] == fig)
+                if (arr[y][x] == fig)
                     return Position.of(x, y);
             }
         }
@@ -353,7 +352,6 @@ public class Board {
 
         return res;
     }
-
 
 
     public String toPen() {
@@ -414,7 +412,7 @@ public class Board {
 
     public static Board fromPen(String pen) {
         String[] ss = pen.split(" ");
-        char [][] arr = new char[8][];
+        char[][] arr = new char[8][];
         String[] lines = ss[0].split("/");
         for (int i = 0; i < 8; i++) {
             arr[i] = new char[8];
@@ -501,33 +499,40 @@ public class Board {
             return sum;
         return -sum;
     }
+
     private Random rand = new Random();
+
     public Move bestTurn(int depth) {
 
-        val list = filteredMovies();
+        ArrayList<Move> list = filteredMovies();
         if (list.isEmpty())
             return null;
         ArrayList<Move> bests = new ArrayList<>();
         float max = Float.MIN_VALUE;
-        for (val move : list) {
+        for (Move move : list) {
             float sc = bestScoreFor(moved(move), depth, false);
             System.out.println("sc " + sc + " -:" + move);
             if (max < sc || bests.isEmpty()) {
                 max = sc;
                 bests.clear();
             }
-            if (max == sc){
+            if (max == sc) {
                 bests.add(move);
             }
         }
         return bests.get(rand.nextInt(bests.size()));
     }
 
-    @Data
-    @AllArgsConstructor
+    //    @Data
+//    @AllArgsConstructor
     static class F {
         Move move;
         float sc;
+
+        public F(Move move, float sc) {
+            this.move = move;
+            this.sc = sc;
+        }
     }
 
     static float bestScoreFor(Board board, int depth, boolean isMax) {
@@ -537,7 +542,7 @@ public class Board {
         ArrayList<F> list = new ArrayList<>();
 
 
-        for (val move : board.filteredMovies()) {
+        for (Move move : board.filteredMovies()) {
             float sc = board.moved(move).score();
             list.add(new F(move, sc));
         }

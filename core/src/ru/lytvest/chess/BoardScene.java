@@ -2,7 +2,6 @@ package ru.lytvest.chess;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import lombok.val;
 import ru.lytvest.chess.net.HttpController;
 
 import java.util.Objects;
@@ -46,8 +45,7 @@ public class BoardScene extends Scene {
     }
 
     public void resizeBoard() {
-        val size = Math.min(width(), height());
-
+        float size = Math.min(width(), height());
         boardContainer.setBounds(0, 0, width(), height());
     }
 
