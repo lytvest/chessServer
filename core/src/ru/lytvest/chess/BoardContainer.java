@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.SizeToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import lombok.val;
 import ru.lytvest.chess.net.HttpController;
 
 import java.util.HashMap;
@@ -34,7 +35,8 @@ public class BoardContainer extends Group {
     private float startY = 0f;
     private boolean canUpdated = true;
     private boolean canServerUpdate = false;
-    private Image bgTimeYou = new Image(Scenes.getSkin(), "white");
+    private TimeContainer meTime;
+    private TimeContainer enemyTime;
 
     public BoardContainer(Board board, boolean isWhite) {
         this.board = board;
@@ -42,7 +44,10 @@ public class BoardContainer extends Group {
         addListener(new MoveListener());
         createCells();
         updateBoard(board, null);
-        addActor(bgTimeYou);
+        meTime = new TimeContainer("herr", false);
+        enemyTime = new TimeContainer("Enemy Ahahaha", true);
+        addActor(meTime);
+        addActor(enemyTime);
     }
 
     private float timer = 0f;
@@ -64,9 +69,18 @@ public class BoardContainer extends Group {
     }
 
     private void updateBoardFormServer() {
-        HttpController.getInstance().getBoard((ans) -> {
-            if (ans.getMove() != null) {
-                updateBoard(Board.fromPen(ans.getPen()), Move.from(ans.getMove()));
+        HttpController.getInstance().getBoard((answer) -> {
+            if (answer.getMove() != null) {
+
+                val nBoard = Board.fromPen(answer.getPen());
+                if (!board.equals(nBoard) && canUpdated) {
+                    meTime.updateTime((int) answer.getMeTime());
+                    enemyTime.updateTime((int) answer.getEnemyTime());
+                    enemyTime.setActive(false);
+                    if (nBoard.numberCourse > 1)
+                        meTime.setActive(true);
+                    updateBoard(nBoard, Move.from(answer.getMove()));
+                }
             }
         });
     }
@@ -241,7 +255,7 @@ public class BoardContainer extends Group {
             Gdx.app.log(getClass().getSimpleName(), "startX:" + startX + " startY:" + startY + " size:" + size);
 
 
-            bgTimeYou.setBounds(startX, startY - timeHeight, getWidth() - 2 * startX, timeHeight);
+            meTime.setBounds(startX, startY - timeHeight, getWidth() - 2 * startX, timeHeight);
         } else {
             float widthTime = getHeight() * 0.3f;
             if (getWidth() >= getHeight() - widthTime){
@@ -253,8 +267,9 @@ public class BoardContainer extends Group {
             startY = 0;
             size = boardSize / 8f;
             Gdx.app.log(getClass().getSimpleName(), "startX:" + startX + " startY:" + startY + " size:" + size);
-
-            bgTimeYou.setBounds(startX + boardSize, boardSize / 2 - timeHeight, boardSize, timeHeight);
+            float timeDX = 10f;
+            meTime.setBounds(startX + boardSize + timeDX , boardSize / 2 - timeHeight - timeDX / 2, getWidth() - startX - boardSize - timeDX * 2, timeHeight);
+            enemyTime.setBounds(startX + boardSize + timeDX, boardSize / 2 + timeDX / 2, getWidth() - startX - boardSize - timeDX * 2, timeHeight);
         }
 
         updateCellSize();
@@ -363,10 +378,16 @@ public class BoardContainer extends Group {
                 Gdx.app.log(getClass().getSimpleName(), "move " + move + " win:" + board.isWinner());
 
                 updateBoard(board, move);
+                if (board.numberCourse > 1){
+                    enemyTime.setActive(true);
+                    meTime.setActive(false);
+                }
                 canUpdated = false;
                 timer = 0f;
                 HttpController.getInstance().move(move.toString(), (answer) -> {
                     Gdx.app.log(getClass().getSimpleName(), "move to " + move + " pen:" + answer.getPen());
+                    meTime.updateTime((int) answer.getMeTime());
+                    enemyTime.updateTime((int) answer.getEnemyTime());
                     canUpdated = true;
                     updateBoard(Board.fromPen(answer.getPen()), null);
                 });

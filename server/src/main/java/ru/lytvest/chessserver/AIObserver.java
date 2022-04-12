@@ -2,7 +2,12 @@ package ru.lytvest.chessserver;
 
 import lombok.val;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.io.*;
 import java.util.Random;
+import java.util.Scanner;
 
 public class AIObserver implements GameObserver {
 
@@ -12,6 +17,10 @@ public class AIObserver implements GameObserver {
 
     public AIObserver(GameController game) {
         this.game = game;
+    }
+
+    public static void main(String[] args) {
+        new AIObserver(null);
     }
 
 
@@ -28,8 +37,9 @@ public class AIObserver implements GameObserver {
 
     public void move() {
         if (meTurn) {
-            val move = game.getBoard().bestTurn(2);
-            game.move(NAME, move.toString());
+            val move = game.getBoard().bestTurn(3);
+            if (move != null)
+                game.move(NAME, move.toString());
         }
     }
 

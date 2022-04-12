@@ -510,8 +510,9 @@ public class Board {
         ArrayList<Move> bests = new ArrayList<>();
         float max = Float.MIN_VALUE;
         for (Move move : list) {
+
             float sc = bestScoreFor(moved(move), depth, false);
-            System.out.println("sc " + sc + " -:" + move);
+            //System.out.println("sc " + sc + " -:" + move);
             if (max < sc || bests.isEmpty()) {
                 max = sc;
                 bests.clear();
@@ -692,6 +693,36 @@ public class Board {
             {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
             {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
     };
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Board board = (Board) o;
+
+        if (numberCourse != board.numberCourse) return false;
+        if (!Arrays.deepEquals(arr, board.arr)) return false;
+        if (isWhite != null ? !isWhite.equals(board.isWhite) : board.isWhite != null) return false;
+        if (whiteOO != null ? !whiteOO.equals(board.whiteOO) : board.whiteOO != null) return false;
+        if (whiteOOO != null ? !whiteOOO.equals(board.whiteOOO) : board.whiteOOO != null) return false;
+        if (blackOO != null ? !blackOO.equals(board.blackOO) : board.blackOO != null) return false;
+        if (blackOOO != null ? !blackOOO.equals(board.blackOOO) : board.blackOOO != null) return false;
+        return oldPawn != null ? oldPawn.equals(board.oldPawn) : board.oldPawn == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Arrays.deepHashCode(arr);
+        result = 31 * result + (isWhite != null ? isWhite.hashCode() : 0);
+        result = 31 * result + (whiteOO != null ? whiteOO.hashCode() : 0);
+        result = 31 * result + (whiteOOO != null ? whiteOOO.hashCode() : 0);
+        result = 31 * result + (blackOO != null ? blackOO.hashCode() : 0);
+        result = 31 * result + (blackOOO != null ? blackOOO.hashCode() : 0);
+        result = 31 * result + (oldPawn != null ? oldPawn.hashCode() : 0);
+        result = 31 * result + numberCourse;
+        return result;
+    }
 
     public static void main(String[] args) {
         Board b = Board.fromPen("8/8/8/8/8/p1r5/1P6/8 w KQkq - 0 1");

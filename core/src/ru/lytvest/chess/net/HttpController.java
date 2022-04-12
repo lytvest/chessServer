@@ -32,7 +32,7 @@ public class HttpController {
                 .content(json.toJson(content));
 
         Net.HttpRequest request = builder.build();
-        Gdx.app.log(getClass().getSimpleName(), "send " + request.getUrl() + " " + request.getContent());
+      //  Gdx.app.log(getClass().getSimpleName(), "send " + request.getUrl() + " " + request.getContent());
         Gdx.net.sendHttpRequest(request, new Net.HttpResponseListener() {
             @Override
             public void handleHttpResponse(Net.HttpResponse httpResponse) {
@@ -52,7 +52,7 @@ public class HttpController {
 
             @Override
             public void failed(Throwable t) {
-                Gdx.app.log(getClass().getSimpleName(), "fail "  + request.getUrl() + " " + request.getContent() + " \n    message:" + t.getMessage());
+          //      Gdx.app.log(getClass().getSimpleName(), "fail "  + request.getUrl() + " " + request.getContent() + " \n    message:" + t.getMessage());
                 callback.accept(null);
             }
 
