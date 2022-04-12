@@ -5,6 +5,7 @@ import com.badlogic.gdx.Net;
 import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter;
+import ru.lytvest.chess.Board;
 
 
 import java.util.Random;
@@ -41,7 +42,7 @@ public class HttpController {
                 Status status = json.fromJson(Status.class, res);
                 if (status.isOk()) {
                     if (status.getGame() == null)
-                        status.setGame(new AnswerBoard());
+                        status.setGame(new AnswerBoard("white", content.user, "no enemy", Board.EMPTY_PEN, 0, 0,"", null));
                     Gdx.app.postRunnable(() -> callback.accept(status.getGame()));
                 }
                 else {

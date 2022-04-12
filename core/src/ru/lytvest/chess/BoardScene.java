@@ -23,7 +23,7 @@ public class BoardScene extends Scene {
 
                     boardContainer.remove();
                     board = Board.fromPen(answerBoard.getPen());
-                    boardContainer = new BoardContainer(board, Objects.equals(answerBoard.getYouColor(), "white"));
+                    boardContainer = new BoardContainer(board, Objects.equals(answerBoard.getMeColor(), "white"));
                     stage.addActor(boardContainer);
                     resizeBoard();
                     label.remove();

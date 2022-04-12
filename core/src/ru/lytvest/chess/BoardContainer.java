@@ -354,8 +354,10 @@ public class BoardContainer extends Group {
                 clearCellsColor();
                 Move move = new Move(old, clickPosition);
                 old = null;
-                if (!board.canMove(move) || board.isWhite != isWhite)
+                if (!board.canMove(move) || board.isWhite != isWhite) {
+                    Gdx.app.log(getClass().getSimpleName(), "can`t move " + move + " win:" + board.isWinner());
                     return;
+                }
 
                 board = board.moved(move);
                 Gdx.app.log(getClass().getSimpleName(), "move " + move + " win:" + board.isWinner());

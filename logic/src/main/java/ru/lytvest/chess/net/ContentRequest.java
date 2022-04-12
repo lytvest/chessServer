@@ -1,9 +1,9 @@
 package ru.lytvest.chess.net;
 
 
+import lombok.Data;
 
-
-
+@Data
 public class ContentRequest {
     public String user;
     public String pass;
@@ -23,27 +23,4 @@ public class ContentRequest {
     public ContentRequest() {
     }
 
-    public String getUser() {
-        return user;
-    }
-
-    public void setUser(String user) {
-        this.user = user;
-    }
-
-    public String getPass() {
-        return pass;
-    }
-
-    public void setPass(String pass) {
-        this.pass = pass;
-    }
-
-    public String getMove() {
-        return move;
-    }
-
-    public void setMove(String move) {
-        this.move = move;
-    }
 }

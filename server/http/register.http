@@ -1,0 +1,10 @@
+POST /register HTTP/1.1
+Host: localhost:8080
+User-Agent: client android
+Accept: application/json
+Content-Type: application/json
+
+{
+  "user": "email@uy.ru",
+  "pass": "password"
+}

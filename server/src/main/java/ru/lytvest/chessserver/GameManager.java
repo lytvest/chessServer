@@ -1,35 +1,51 @@
 package ru.lytvest.chessserver;
 
 import lombok.val;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 import ru.lytvest.chess.Board;
 import ru.lytvest.chess.net.AnswerBoard;
 import ru.lytvest.chessserver.entities.User;
 
+import java.util.Random;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 
+@Service
 public class GameManager {
 
-    private User old;
-    private ConcurrentHashMap<User, GameInf> map = new ConcurrentHashMap<>();
+    private String old;
+    private ConcurrentHashMap<String, Player> map = new ConcurrentHashMap<>();
+    private CopyOnWriteArraySet<AIObserver> ai = new CopyOnWriteArraySet<>();
 
-    synchronized public User getOld() {
+
+    @Scheduled(initialDelay = 1000, fixedDelay = 1000)
+    private void aiMoved(){
+        for(AIObserver observer : ai){
+            observer.move();
+        }
+    }
+
+    synchronized public String getOld() {
         return old;
     }
 
-    synchronized public void setOld(User old) {
+    synchronized public void setOld(String old) {
         this.old = old;
     }
 
-    public AnswerBoard findGame(User user){
+    public AnswerBoard findGame(String user){
         if(map.containsKey(user))
-            return map.get(user).getAnswer(user);
+            return map.get(user).getAnswer();
 
         return null;
     }
 
-    public AnswerBoard create(User user){
+    public AnswerBoard create(String user){
         if(map.containsKey(user))
-            return null;
+            return map.get(user).getAnswer();
 
         if (getOld() == null || getOld().equals(user)){
             setOld(user);
@@ -37,30 +53,43 @@ public class GameManager {
         }
 
         System.out.println("create game " + getOld() + " " + user);
-        var game = new Game(getOld(), user);
-        map.put(getOld(), game);
-        map.put(user, game);
-        return game.getAnswer(user);
+        var game = new GameController(getOld(), user);
+        val playerWhite = new Player(getOld(), game);
+        val playerBlack = new Player(user, game);
+        game.addObserver(playerWhite);
+        game.addObserver(playerBlack);
+        map.put(getOld(), playerWhite);
+        map.put(user, playerBlack);
+        game.start();
+        return playerWhite.getAnswer();
     }
 
-    public AnswerBoard turn(User user, String turn){
+    public AnswerBoard turn(String user, String turn){
         if (!map.containsKey(user))
             return null;
-        var game = map.get(user);
-        return game.move(user, turn);
+        var player = map.get(user);
+        return player.move(turn);
     }
-    public AnswerBoard endGame(User user){
-        var answer = map.remove(user).getAnswer(user);
-        if (answer != null)
-            answer.setMessage("game end!");
+    public AnswerBoard endGame(String user){
+        var answer = map.remove(user).getAnswer();
+        //TODO remove game
         return answer;
     }
 
+    private static final Random random = new Random();
 
-    public AnswerBoard createAI(User user) {
-        map.put(user, new GameWithAI(user));
-        val res = map.get(user).getAnswer(user);
-        res.setPen(Board.START_PEN);
-        return res;
+    public AnswerBoard createAI(String user) {
+        if(map.containsKey(user))
+            return map.get(user).getAnswer();
+
+        var game = random.nextBoolean() ? new GameController(user, AIObserver.NAME) : new GameController(AIObserver.NAME, user);
+        val playerWhite = new Player(user, game);
+        val playerBlack = new AIObserver(game);
+        map.put(user, playerWhite);
+        ai.add(playerBlack);
+        game.addObserver(playerWhite);
+        game.addObserver(playerBlack);
+        game.start();
+        return playerWhite.getAnswer();
     }
 }

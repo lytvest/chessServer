@@ -20,7 +20,8 @@ public class SimpleController {
 
     Logger log = LoggerFactory.getLogger(SimpleController.class);
 
-    private GameManager gameManager = new GameManager();
+    @Autowired
+    private GameManager gameManager;
 
     @GetMapping("/")
     public String index(Model model){
@@ -77,7 +78,7 @@ public class SimpleController {
             return "jsonTemplate";
         }
 
-        var answer = gameManager.findGame(user);
+        var answer = gameManager.findGame(user.getName());
         if (answer != null) {
             model.addAttribute("game", answer);
             model.addAttribute("status", "ok");
@@ -98,7 +99,7 @@ public class SimpleController {
             return "jsonTemplate";
         }
 
-        val answer = gameManager.createAI(user);
+        val answer = gameManager.createAI(user.getName());
         if (answer != null) {
             model.addAttribute("game", answer);
             model.addAttribute("status", "ok");
@@ -121,9 +122,10 @@ public class SimpleController {
         if (contentRequest.move == null){
             model.addAttribute("status", "fail");
             model.addAttribute("message", "no find turn");
+            return "jsonTemplate";
         }
 
-        var answer = gameManager.turn(user, contentRequest.move);
+        var answer = gameManager.turn(user.getName(), contentRequest.move);
         if (answer != null) {
             model.addAttribute("game", answer);
             model.addAttribute("status", "ok");
@@ -142,7 +144,7 @@ public class SimpleController {
             return "jsonTemplate";
         }
 
-        var answer = gameManager.endGame(user);
+        var answer = gameManager.endGame(user.getName());
         if (answer != null) {
             model.addAttribute("game", answer);
             model.addAttribute("status", "ok");

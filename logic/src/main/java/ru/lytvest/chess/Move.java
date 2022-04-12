@@ -1,20 +1,15 @@
 package ru.lytvest.chess;
 
-//import lombok.AllArgsConstructor;
-//import lombok.Value;
-//
-//@Value
-//@AllArgsConstructor
+import lombok.AllArgsConstructor;
+import lombok.Value;
+
+@Value
+@AllArgsConstructor
 public class Move {
     public Position start;
     public Position end;
     public char figure;
 
-    public Move(Position start, Position end, char figure) {
-        this.start = start;
-        this.end = end;
-        this.figure = figure;
-    }
 
     public Move(Position start, Position end) {
         this(start, end, '-');
@@ -34,15 +29,4 @@ public class Move {
             return "" + start + end + figure;
     }
 
-    public Position getStart() {
-        return start;
-    }
-
-    public Position getEnd() {
-        return end;
-    }
-
-    public char getFigure() {
-        return figure;
-    }
 }
