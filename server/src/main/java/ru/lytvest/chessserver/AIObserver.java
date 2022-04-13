@@ -1,21 +1,21 @@
 package ru.lytvest.chessserver;
 
+import lombok.Getter;
 import lombok.val;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import java.io.*;
-import java.util.Random;
-import java.util.Scanner;
+import ru.lytvest.chess.Board;
+import ru.lytvest.chess.net.BoardResponse;
 
 public class AIObserver implements GameObserver {
 
     public static final String NAME = "AI-BOT";
     private boolean meTurn = false;
+    @Getter
+    private boolean endGame = false;
+
+    protected ChessGame game;
 
 
-    public AIObserver(GameController game) {
+    public AIObserver(ChessGame game) {
         this.game = game;
     }
 
@@ -25,22 +25,39 @@ public class AIObserver implements GameObserver {
 
 
     @Override
-    public void update(String pen, String oldTurn, String nameWhite, String nameBlack, long timeWhite, long timeBlack, boolean isWhiteTurn) {
+    public void update(Board board, String oldTurn, String nameWhite, String nameBlack, long timeWhite, long timeBlack) {
         if (nameWhite.equals(NAME)) {
-            meTurn = isWhiteTurn;
+            meTurn = board.isWhite;
         } else {
-            meTurn = !isWhiteTurn;
+            meTurn = !board.isWhite;
         }
     }
 
-    protected GameController game;
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public BoardResponse getAnswer() {
+        return null;
+    }
+
 
     public void move() {
+        if (game.getBoard().isEndGame()){
+            game.removeObserver(this);
+            endGame = true;
+        }
         if (meTurn) {
-            val move = game.getBoard().bestTurn(3);
+            val move = game.getBoard().bestTurn(2);
             if (move != null)
                 game.move(NAME, move.toString());
         }
     }
 
+    @Override
+    public String toString() {
+        return NAME;
+    }
 }

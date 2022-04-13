@@ -39,6 +39,15 @@ play-button-pressed
   orig: 550, 550
   offset: 0, 0
   index: -1
+round-rectangle
+  rotate: false
+  xy: 2, 2
+  size: 178, 38
+  split: 9, 11, 9, 9
+  pad: 0, 0, 0, 0
+  orig: 178, 38
+  offset: 0, 0
+  index: -1
 settings
   rotate: false
   xy: 695, 623
@@ -51,15 +60,6 @@ settings-pressed
   xy: 1247, 1175
   size: 550, 550
   orig: 550, 550
-  offset: 0, 0
-  index: -1
-time
-  rotate: false
-  xy: 2, 2
-  size: 178, 38
-  split: 9, 11, 9, 9
-  pad: 0, 0, 0, 0
-  orig: 178, 38
   offset: 0, 0
   index: -1
 time-green

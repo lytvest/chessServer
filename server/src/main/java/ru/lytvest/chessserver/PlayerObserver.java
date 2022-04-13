@@ -1,23 +1,26 @@
 package ru.lytvest.chessserver;
 
 import lombok.val;
-import ru.lytvest.chess.net.AnswerBoard;
+import ru.lytvest.chess.Board;
+import ru.lytvest.chess.net.BoardResponse;
 
 
 public class PlayerObserver implements GameObserver {
 
-    protected AnswerBoard answer;
+    protected BoardResponse answer;
     protected final String name;
-
-
-    public PlayerObserver(String name) {
+    protected Board board;
+    protected ChessGame game;
+    public PlayerObserver(String name, ChessGame game) {
         this.name = name;
+        this.game = game;
     }
 
     @Override
-    public void update(String pen, String oldTurn, String nameWhite, String nameBlack, long timeWhite, long timeBlack, boolean isWhiteTurn) {
-        val bulder = AnswerBoard.builder()
-                .pen(pen)
+    public void update(Board board, String oldTurn, String nameWhite, String nameBlack, long timeWhite, long timeBlack) {
+        this.board = board;
+        val bulder = BoardResponse.builder()
+                .pen(board.toPen())
                 .move(oldTurn)
                 .message("moved to " + oldTurn);
         if (name.equals(nameWhite)) {
@@ -38,9 +41,20 @@ public class PlayerObserver implements GameObserver {
         answer = bulder.build();
     }
 
-    public AnswerBoard getAnswer() {
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public BoardResponse getAnswer() {
+        if(board.isEndGame()){
+            game.removeObserver(this);
+        }
         return answer;
     }
 
-
+    @Override
+    public String toString() {
+        return name;
+    }
 }

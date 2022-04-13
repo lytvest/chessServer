@@ -1,8 +1,9 @@
 package ru.lytvest.chess;
 
-//import lombok.AllArgsConstructor;
-//import lombok.Data;
-//import lombok.val;
+
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -247,7 +248,7 @@ public class Board {
         }
     }
 
-    ArrayList<Move> moviesNotFilterFor(Position position, boolean skipEnemy) {
+    public ArrayList<Move> moviesNotFilterFor(Position position, boolean skipEnemy) {
         ArrayList<Position> res = new ArrayList<>();
         char fig = get(position);
         if (fig == ' ' || (Character.isUpperCase(fig) != isWhite && skipEnemy))
@@ -280,7 +281,7 @@ public class Board {
         return res2;
     }
 
-    ArrayList<Position> enemyFigures() {
+    public ArrayList<Position> enemyFigures() {
         ArrayList<Position> res = new ArrayList<>();
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
@@ -291,7 +292,7 @@ public class Board {
         return res;
     }
 
-    ArrayList<Position> meFigures() {
+    public ArrayList<Position> meFigures() {
         ArrayList<Position> res = new ArrayList<Position>();
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
@@ -302,7 +303,7 @@ public class Board {
         return res;
     }
 
-    Position findPos(char fig) {
+    private Position findPos(char fig) {
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
                 if (arr[y][x] == fig)
@@ -312,18 +313,22 @@ public class Board {
         return null;
     }
 
-    boolean isWinner() {
+    public boolean notCanEatKind() {
         char kind = 'k';
         if (!isWhite) kind = 'K';
         Position position = findPos(kind);
         for (Move move : allMovies()) {
             if (move.end.equals(position))
-                return true;
+                return false;
         }
-        return false;
+        return true;
     }
 
-    ArrayList<Move> allMovies() {
+    public boolean isEndGame(){
+        return filteredMovies().size() == 0;
+    }
+
+    public ArrayList<Move> allMovies() {
         ArrayList<Move> res = new ArrayList<Move>();
         for (Position p : meFigures()) {
             res.addAll(moviesNotFilterFor(p, true));
@@ -335,7 +340,7 @@ public class Board {
         ArrayList<Move> res = new ArrayList<>();
         for (Position p : meFigures()) {
             for (Move move : moviesNotFilterFor(p, true)) {
-                if (!moved(move).isWinner())
+                if (moved(move).notCanEatKind())
                     res.add(move);
             }
         }
@@ -346,7 +351,7 @@ public class Board {
         ArrayList<Move> res = new ArrayList<>();
 
         for (Move move : moviesNotFilterFor(position, true)) {
-            if (!moved(move).isWinner())
+            if (moved(move).notCanEatKind())
                 res.add(move);
         }
 
@@ -400,7 +405,7 @@ public class Board {
     }
 
     public boolean canMove(Move move) {
-        return moviesNotFilterFor(move.start, true).contains(move) && !moved(move).isWinner();
+        return moviesNotFilterFor(move.start, true).contains(move) && moved(move).notCanEatKind();
     }
 
 
@@ -451,7 +456,7 @@ public class Board {
 
     }
 
-    float score() {
+    private float score() {
         float sum = 0;
         for (int y = 0; y < 8; y++) {
             for (int x = 0; x < 8; x++) {
@@ -524,19 +529,14 @@ public class Board {
         return bests.get(rand.nextInt(bests.size()));
     }
 
-    //    @Data
-//    @AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     static class F {
         Move move;
         float sc;
-
-        public F(Move move, float sc) {
-            this.move = move;
-            this.sc = sc;
-        }
     }
 
-    static float bestScoreFor(Board board, int depth, boolean isMax) {
+    private static float bestScoreFor(Board board, int depth, boolean isMax) {
         if (depth <= 0)
             return board.score();
 
@@ -580,7 +580,7 @@ public class Board {
     }
 
 
-    static double[][] pawnEvalWhite = new double[][]{
+    private static double[][] pawnEvalWhite = new double[][]{
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
             {5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0},
             {1.0, 1.0, 2.0, 3.0, 3.0, 2.0, 1.0, 1.0},
@@ -591,7 +591,7 @@ public class Board {
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
     };
 
-    static double[][] pawnEvalBlack = new double[][]{
+    private static double[][] pawnEvalBlack = new double[][]{
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
             {0.5, 1.0, 1.0, -2.0, -2.0, 1.0, 1.0, 0.5},
             {0.5, -0.5, -1.0, 0.0, 0.0, -1.0, -0.5, 0.5},
@@ -602,7 +602,7 @@ public class Board {
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
     };
 
-    double[][] knightEval = new double[][]
+    private static double[][] knightEval = new double[][]
             {
                     {-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0},
                     {-4.0, -2.0, 0.0, 0.0, 0.0, 0.0, -2.0, -4.0},
@@ -614,7 +614,7 @@ public class Board {
                     {-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0}
             };
 
-    double[][] bishopEvalWhite = new double[][]{
+   private static double[][] bishopEvalWhite = new double[][]{
             {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0},
             {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0},
             {-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},
@@ -625,7 +625,7 @@ public class Board {
             {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0}
     };
 
-    double[][] bishopEvalBlack = new double[][]{
+    private static double[][] bishopEvalBlack = new double[][]{
 
             {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0},
             {-1.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, -1.0},
@@ -637,7 +637,7 @@ public class Board {
             {-2.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -2.0},
     };
 
-    double[][] rookEvalWhite = new double[][]{
+    private static double[][] rookEvalWhite = new double[][]{
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
             {0.5, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.5},
             {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
@@ -648,7 +648,7 @@ public class Board {
             {0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0}
     };
 
-    double[][] rookEvalBlack = new double[][]{
+    private static double[][] rookEvalBlack = new double[][]{
 
             {0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0},
             {-0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5},
@@ -660,7 +660,7 @@ public class Board {
             {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
     };
 
-    double[][] evalQueen = new double[][]{
+    private static double[][] evalQueen = new double[][]{
             {-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0},
             {-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0},
             {-1.0, 0.0, 0.5, 0.5, 0.5, 0.5, 0.0, -1.0},
@@ -671,7 +671,7 @@ public class Board {
             {-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}
     };
 
-    double[][] kingEvalWhite = new double[][]{
+    private static double[][] kingEvalWhite = new double[][]{
 
             {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
             {-3.0, -4.0, -4.0, -5.0, -5.0, -4.0, -4.0, -3.0},
@@ -683,7 +683,7 @@ public class Board {
             {2.0, 3.0, 1.0, 0.0, 0.0, 1.0, 3.0, 2.0}
     };
 
-    double[][] kingEvalBlack = new double[][]{
+    private static double[][] kingEvalBlack = new double[][]{
             {2.0, 3.0, 1.0, 0.0, 0.0, 1.0, 3.0, 2.0},
             {2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0},
             {-1.0, -2.0, -2.0, -2.0, -2.0, -2.0, -2.0, -1.0},
@@ -724,13 +724,6 @@ public class Board {
         return result;
     }
 
-    public static void main(String[] args) {
-        Board b = Board.fromPen("8/8/8/8/8/p1r5/1P6/8 w KQkq - 0 1");
-        System.out.println(b.toPen());
-        System.out.println(b.filteredMovies());
-        System.out.println(b.filteredMovies());
-        System.out.println(b.bestTurn(2));
-    }
 }
 
 

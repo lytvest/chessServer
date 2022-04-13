@@ -2,6 +2,7 @@ package ru.lytvest.chess;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import ru.lytvest.chess.net.BoardResponse;
 import ru.lytvest.chess.net.HttpController;
 
 import java.util.Objects;
@@ -14,28 +15,39 @@ public class BoardScene extends Scene {
     public void show() {
         super.show();
         board = Board.EMPTY;
-        boardContainer = new BoardContainer(board, true);
+        boardContainer = new BoardContainer(board, true, null, "", "");
         stage.addActor(boardContainer);
         final Label label = new Label("find enemy...", skin);
         label.setPosition(width() / 2 - label.getPrefWidth() / 2, height() / 2);
         stage.addActor(label);
-        HttpController.getInstance().createAI(answerBoard -> {
-
-                    boardContainer.remove();
-                    board = Board.fromPen(answerBoard.getPen());
-                    boardContainer = new BoardContainer(board, Objects.equals(answerBoard.getMeColor(), "white"));
-                    stage.addActor(boardContainer);
-                    resizeBoard();
-                    label.remove();
-                    boardContainer.setCanServerUpdate(true);
-
-//                    Gdx.app.log(getClass().getSimpleName(), "get board " + answerBoard.getPen());
-//                    boardContainer.updateBoard(Board.fromPen(answerBoard.getPen()),
-//                            answerBoard.getMove() != null ? Move.from(answerBoard.getMove()) : null);
-                }
-        );
+       // sendCreate(label);
 
     }
+
+//    private void sendCreate(Label label) {
+//        HttpController.create(answerBoard -> {
+//                    if (answerBoard != null) {
+//                        createNewBoard(label, answerBoard);
+//                    } else {
+//
+//                    }
+//                }
+//        );
+//    }
+//
+//    private void sendGetBoard(Label label) {
+//        HttpController.getBoard();
+//    }
+//
+//    private void createNewBoard(Label label, BoardResponse boardResponse) {
+//        boardContainer.remove();
+//        board = Board.fromPen(boardResponse.getPen());
+//        boardContainer = new BoardContainer(board, Objects.equals(boardResponse.getMeColor(), "white"), boardResponse.getIdGame(), boardResponse.getUsername(), boardResponse.getEnemyUsername());
+//        stage.addActor(boardContainer);
+//        resizeBoard();
+//        label.remove();
+//        boardContainer.setCanServerUpdate(true);
+//    }
 
     @Override
     public void resize(int width, int height) {

@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import ru.lytvest.chess.net.*;
 import ru.lytvest.chessserver.entities.User;
-import ru.lytvest.chess.net.ContentRequest;
 import ru.lytvest.chessserver.repos.UserRepository;
 
 
@@ -31,36 +31,36 @@ public class SimpleController {
     }
 
     @PostMapping("register")
-    public String register(Model model, @RequestBody ContentRequest contentRequest){
+    public String register(Model model, @RequestBody AuthRequest request){
 
-        if(users.findByName(contentRequest.user) != null){
+        if(users.findByName(request.getLogin()) != null){
             model.addAttribute("status", "fail");
             model.addAttribute("message", "login already in use");
         } else {
-            users.save(new User(contentRequest));
+            users.save(new User(request.getLogin(), request.getPass()));
             model.addAttribute("status", "ok");
-            model.addAttribute("login", contentRequest.user);
-            log.info("register user " + contentRequest);
+            model.addAttribute("response", new AuthResponse(request.getLogin()));
+            log.info("register user " + request);
         }
         return "jsonTemplate";
     }
 
     @PostMapping("login")
-    public String login(Model model, @RequestBody ContentRequest contentRequest){
-        User user = findUser(model, contentRequest);
+    public String login(Model model, @RequestBody AuthRequest request){
+        User user = findUser(model, request);
         if (user == null){
             return "jsonTemplate";
         }
 
         model.addAttribute("status", "ok");
-        model.addAttribute("login", user.getName());
+        model.addAttribute("response", new AuthResponse(request.getLogin()));
 
 
         return "jsonTemplate";
     }
 
-    private User findUser(Model model, ContentRequest contentRequest) {
-        var user = new User(contentRequest);
+    private User findUser(Model model, AuthRequest request) {
+        var user = new User(request.getLogin(), request.getPass());
         var userFound = users.findByNameAndPass(user.getName(), user.getPass());
         //System.out.println("controller user find " + userFound);
         if (userFound == null) {
@@ -71,16 +71,21 @@ public class SimpleController {
     }
 
     @PostMapping("getBoard")
-    public String findGame(Model model, @RequestBody ContentRequest contentRequest){
-        User user = findUser(model, contentRequest);
-        log.info("get board for " + user);
+    public String findGame(Model model, @RequestBody BoardRequest request){
+        User user = findUser(model, request);
+        //log.info("get board for " + user);
         if (user == null){
             return "jsonTemplate";
         }
+        if (request.getIdGame() == null){
+            model.addAttribute("status", "fail");
+            model.addAttribute("message", "idGame null " + request);
+            return "jsonTemplate";
+        }
 
-        var answer = gameManager.findGame(user.getName());
+        var answer = gameManager.findGame(request.getIdGame(), request.getLogin());
         if (answer != null) {
-            model.addAttribute("game", answer);
+            model.addAttribute("response", new BoardResponse());
             model.addAttribute("status", "ok");
         } else {
             model.addAttribute("status", "fail");
@@ -91,8 +96,8 @@ public class SimpleController {
     }
 
     @PostMapping("createAI")
-    public String createAI(Model model, @RequestBody ContentRequest contentRequest){
-        User user = findUser(model, contentRequest);
+    public String createAI(Model model, @RequestBody CreateRequest request){
+        User user = findUser(model, request);
 
         log.info("create ai for " + user);
         if (user == null){
@@ -111,21 +116,16 @@ public class SimpleController {
         return "jsonTemplate";
     }
 
-    @PostMapping("turn")
-    public String turn(Model model, @RequestBody ContentRequest contentRequest){
-        User user = findUser(model, contentRequest);
+    @PostMapping("create")
+    public String create(Model model, @RequestBody CreateRequest request){
+        User user = findUser(model, request);
 
-        System.out.println("turn for " + user);
+        log.info("create for " + user);
         if (user == null){
             return "jsonTemplate";
         }
-        if (contentRequest.move == null){
-            model.addAttribute("status", "fail");
-            model.addAttribute("message", "no find turn");
-            return "jsonTemplate";
-        }
 
-        var answer = gameManager.turn(user.getName(), contentRequest.move);
+        val answer = gameManager.create(user.getName());
         if (answer != null) {
             model.addAttribute("game", answer);
             model.addAttribute("status", "ok");
@@ -137,20 +137,28 @@ public class SimpleController {
         return "jsonTemplate";
     }
 
-    @PostMapping("endGame")
-    public String endGame(Model model, @RequestBody ContentRequest contentRequest){
-        User user = findUser(model, contentRequest);
+
+    @PostMapping("turn")
+    public String turn(Model model, @RequestBody MoveRequest request){
+        User user = findUser(model, request);
+
+        log.info("turn for " + user + " " + request);
         if (user == null){
             return "jsonTemplate";
         }
+        if (request.getMove() == null || request.getIdGame() == null){
+            model.addAttribute("status", "fail");
+            model.addAttribute("message", "no find turn");
+            return "jsonTemplate";
+        }
 
-        var answer = gameManager.endGame(user.getName());
+        var answer = gameManager.turn(request.getIdGame(), request.getLogin(), request.getMove());
         if (answer != null) {
             model.addAttribute("game", answer);
             model.addAttribute("status", "ok");
         } else {
             model.addAttribute("status", "fail");
-            model.addAttribute("message", "ops end game failed");
+            model.addAttribute("message", "find enemy");
         }
 
         return "jsonTemplate";

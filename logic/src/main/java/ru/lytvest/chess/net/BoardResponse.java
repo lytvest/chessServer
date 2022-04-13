@@ -6,7 +6,7 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnswerBoard {
+public class BoardResponse {
 
     String meColor;
     String username;
@@ -16,5 +16,4 @@ public class AnswerBoard {
     long enemyTime;
     String message;
     String move;
-
 }

@@ -3,7 +3,6 @@ package ru.lytvest.chessserver.entities;
 
 import lombok.*;
 import org.hibernate.Hibernate;
-import ru.lytvest.chess.net.ContentRequest;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -27,9 +26,9 @@ public class User {
 
     private String pass;
 
-    public User(ContentRequest login){
-        name = login.user;
-        pass = login.pass;
+    public User(String login, String pass) {
+        this.name = login;
+        this.pass = pass;
     }
 
     @Override

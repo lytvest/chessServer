@@ -13,7 +13,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import lombok.val;
+import ru.lytvest.chess.net.BoardRequest;
 import ru.lytvest.chess.net.HttpController;
+import ru.lytvest.chess.net.MoveRequest;
+import ru.lytvest.chess.net.UserInfo;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,17 +40,22 @@ public class BoardContainer extends Group {
     private boolean canServerUpdate = false;
     private TimeContainer meTime;
     private TimeContainer enemyTime;
+    private String idGame;
+    private Label endGameLabel = new Label("Игра окончена!", Scenes.getSkin());
 
-    public BoardContainer(Board board, boolean isWhite) {
+    public BoardContainer(Board board, boolean isWhite, String idGame, String meName, String enemyName) {
+        this.idGame = idGame;
         this.board = board;
         this.isWhite = isWhite;
         addListener(new MoveListener());
         createCells();
         updateBoard(board, null);
-        meTime = new TimeContainer("herr", false);
-        enemyTime = new TimeContainer("Enemy Ahahaha", true);
+        meTime = new TimeContainer(meName, false);
+        enemyTime = new TimeContainer(enemyName, true);
         addActor(meTime);
         addActor(enemyTime);
+        addActor(endGameLabel);
+        endGameLabel.setVisible(false);
     }
 
     private float timer = 0f;
@@ -69,20 +77,26 @@ public class BoardContainer extends Group {
     }
 
     private void updateBoardFormServer() {
-        HttpController.getInstance().getBoard((answer) -> {
-            if (answer.getMove() != null) {
+        val req = new BoardRequest(idGame);
+        req.copyAuth(UserInfo.getInstance());
+        HttpController.getBoard(req, (response) -> {
+            if (response != null && response.getMove() != null) {
 
-                val nBoard = Board.fromPen(answer.getPen());
+                val nBoard = Board.fromPen(response.getPen());
+                if (nBoard.isEndGame()){
+                    gameEnd();
+                    Gdx.app.log(getClass().getSimpleName(), " game end!");
+                }
                 if (!board.equals(nBoard) && canUpdated) {
-                    meTime.updateTime((int) answer.getMeTime());
-                    enemyTime.updateTime((int) answer.getEnemyTime());
+                    meTime.updateTime((int) response.getMeTime());
+                    enemyTime.updateTime((int) response.getEnemyTime());
                     enemyTime.setActive(false);
                     if (nBoard.numberCourse > 1)
                         meTime.setActive(true);
-                    updateBoard(nBoard, Move.from(answer.getMove()));
+                    updateBoard(nBoard, Move.from(response.getMove()));
                 }
             }
-        });
+        }, (e) -> {});
     }
 
     private void createFigure(char ch, Position position) {
@@ -270,6 +284,7 @@ public class BoardContainer extends Group {
             float timeDX = 10f;
             meTime.setBounds(startX + boardSize + timeDX , boardSize / 2 - timeHeight - timeDX / 2, getWidth() - startX - boardSize - timeDX * 2, timeHeight);
             enemyTime.setBounds(startX + boardSize + timeDX, boardSize / 2 + timeDX / 2, getWidth() - startX - boardSize - timeDX * 2, timeHeight);
+            endGameLabel.setPosition(startX + boardSize + 10, 15);
         }
 
         updateCellSize();
@@ -283,6 +298,12 @@ public class BoardContainer extends Group {
             else
                 cells.get(position).setColor(whiteColorGreen);
         }
+    }
+    public void gameEnd(){
+        canServerUpdate = false;
+        meTime.setActive(false);
+        enemyTime.setActive(false);
+        endGameLabel.setVisible(true);
     }
 
 
@@ -351,6 +372,8 @@ public class BoardContainer extends Group {
             return toDisplayPos(Position.of((int) ((x - startX) / size), (int) ((y - startY) / size)));
         }
 
+
+
         @Override
         public void clicked(InputEvent event, float x, float y) {
             super.clicked(event, x, y);
@@ -370,12 +393,12 @@ public class BoardContainer extends Group {
                 Move move = new Move(old, clickPosition);
                 old = null;
                 if (!board.canMove(move) || board.isWhite != isWhite) {
-                    Gdx.app.log(getClass().getSimpleName(), "can`t move " + move + " win:" + board.isWinner());
+                    Gdx.app.log(getClass().getSimpleName(), "can`t move " + move + " end:" + board.isEndGame());
                     return;
                 }
 
                 board = board.moved(move);
-                Gdx.app.log(getClass().getSimpleName(), "move " + move + " win:" + board.isWinner());
+                Gdx.app.log(getClass().getSimpleName(), "move " + move + " end:" + board.isEndGame());
 
                 updateBoard(board, move);
                 if (board.numberCourse > 1){
@@ -384,13 +407,11 @@ public class BoardContainer extends Group {
                 }
                 canUpdated = false;
                 timer = 0f;
-                HttpController.getInstance().move(move.toString(), (answer) -> {
-                    Gdx.app.log(getClass().getSimpleName(), "move to " + move + " pen:" + answer.getPen());
+                val req = new MoveRequest(idGame, move.toString());
+                HttpController.move(req, (answer) -> {
                     meTime.updateTime((int) answer.getMeTime());
-                    enemyTime.updateTime((int) answer.getEnemyTime());
                     canUpdated = true;
-                    updateBoard(Board.fromPen(answer.getPen()), null);
-                });
+                }, (e) -> {} );
             }
 
         }

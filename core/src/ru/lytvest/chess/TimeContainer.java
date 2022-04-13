@@ -9,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
 public class TimeContainer extends Group {
 
-    Image bgTime = new Image(Scenes.getSkin(), "time");
-    Image bgName = new Image(Scenes.getSkin(), "time");
+    Image bgTime = new Image(Scenes.getSkin(), "round-rectangle");
+    Image bgName = new Image(Scenes.getSkin(), "round-rectangle");
     Image line = new Image(Scenes.getSkin(), "white");
     Color green = Scenes.getSkin().getColor("bg-green");
     Color gray = Scenes.getSkin().getColor("bg-grey");

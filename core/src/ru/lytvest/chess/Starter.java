@@ -15,7 +15,7 @@ public class Starter extends ApplicationAdapter {
 	public void create () {
 		VisUI.load(VisUI.SkinScale.X2);
 		Scenes.resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		Scenes.push(new LoadingScene(BoardScene.class));
+		Scenes.push(new LoadingScene(AuthScene.class));
 	}
 
 	@Override

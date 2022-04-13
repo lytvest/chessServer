@@ -4,123 +4,92 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
 import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonWriter;
-import ru.lytvest.chess.Board;
+import lombok.val;
 
 
-import java.util.Random;
 import java.util.function.Consumer;
 
 public class HttpController {
 
     public static final String URL = "http://localhost:8080";
     public final Json json = new Json();
+    private final JsonReader reader = new JsonReader();
 
-    private ContentRequest content;
     private HttpController(){
         json.setOutputType(JsonWriter.OutputType.json);
     }
 
-
-    private void send(String path, ContentRequest content, Consumer<AnswerBoard> callback){
+    private <SEND, GET> void send(String path, Class<GET> getClass, SEND send, Consumer<GET> callSuccess, Consumer<Throwable> callException){
         final HttpRequestBuilder builder = new HttpRequestBuilder();
         builder.newRequest()
                 .method(Net.HttpMethods.POST)
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .url(URL + path)
-                .content(json.toJson(content));
+                .content(json.toJson(send));
 
-        Net.HttpRequest request = builder.build();
-      //  Gdx.app.log(getClass().getSimpleName(), "send " + request.getUrl() + " " + request.getContent());
+        final Net.HttpRequest request = builder.build();
+        //  Gdx.app.log(getClass().getSimpleName(), "send " + request.getUrl() + " " + request.getContent());
         Gdx.net.sendHttpRequest(request, new Net.HttpResponseListener() {
             @Override
             public void handleHttpResponse(Net.HttpResponse httpResponse) {
                 String res = httpResponse.getResultAsString();
-                Gdx.app.log(getClass().getSimpleName(), "answer for " + request.getUrl() + " : " + res);
-
-                Status status = json.fromJson(Status.class, res);
-                if (status.isOk()) {
-                    if (status.getGame() == null)
-                        status.setGame(new AnswerBoard("white", content.user, "no enemy", Board.EMPTY_PEN, 0, 0,"", null));
-                    Gdx.app.postRunnable(() -> callback.accept(status.getGame()));
-                }
-                else {
-                    Gdx.app.log(getClass().getSimpleName(), "status fail " + request.getUrl() + " " + request.getContent() + " \n    " + status);
+                val value = reader.parse(res);
+                val status = value.get("status").asString();
+                if (status.equals("ok")){
+                    val response = value.get("response");
+                    val obj = response.toJson(JsonWriter.OutputType.json);
+                    Gdx.app.log(getClass().getSimpleName(), "answer OK for " + request.getUrl() + " : " + obj);
+                    val get = json.fromJson(getClass, obj);
+                    Gdx.app.postRunnable(() -> callSuccess.accept(get));
+                } else {
+                    Gdx.app.log(getClass().getSimpleName(), "answer FAIL for " + request.getUrl() );
+                    Gdx.app.postRunnable(() -> callException.accept(new Exception(value.get("message").asString())));
                 }
             }
 
             @Override
             public void failed(Throwable t) {
-          //      Gdx.app.log(getClass().getSimpleName(), "fail "  + request.getUrl() + " " + request.getContent() + " \n    message:" + t.getMessage());
-                callback.accept(null);
+                //      Gdx.app.log(getClass().getSimpleName(), "fail "  + request.getUrl() + " " + request.getContent() + " \n    message:" + t.getMessage());
+                t.printStackTrace();
+                callException.accept(t);
             }
 
             @Override
             public void cancelled() {
                 Gdx.app.log(getClass().getSimpleName(), "cancel "  + request.getUrl() + " " + request.getContent());
-                callback.accept(null);
+
             }
         });
     }
 
-    private void login(Consumer<AnswerBoard> callback){
-        send("/login", content, callback);
+    public static void login(AuthRequest request, Consumer<AuthResponse> callSuccess, Consumer<Throwable> callException){
+        instance().send("/login", AuthResponse.class, request, callSuccess, callException);
     }
-    private void register(Consumer<AnswerBoard> callback){
-        if(content == null) {
-            Random rand = new Random();
-            content = new ContentRequest("user" + rand.nextInt(1000), "p" + rand.nextInt());
-        }
-        send("/register", content, (ans) -> {
-            if(ans == null){
-                content = null;
-                register(callback);
-            } else {
-                callback.accept(ans);
-            }
-        });
+    public static void register(AuthRequest request, Consumer<AuthResponse> callbackSuccess, Consumer<Throwable> callException){
+        instance().send("/register", AuthResponse.class, request, callbackSuccess, callException);
     }
 
-    public void authorization(Consumer<AnswerBoard> callback) {
-        if (content == null)
-            register(callback);
-        else
-            login(callback);
+    public static void createAI(CreateRequest request, Consumer<CreateResponse> response, Consumer<Throwable> exc){
+        instance().send("/createAI", CreateResponse.class, request, response, exc);
+    }
+    public static void create(CreateRequest request, Consumer<CreateResponse> response, Consumer<Throwable> exc){
+        instance().send("/create", CreateResponse.class, request, response, exc);
     }
 
-    public boolean isAuthorization(){
-        return content != null;
+    public static void move(MoveRequest request, Consumer<MoveResponse> response, Consumer<Throwable> exc){
+        instance().send("/turn", MoveResponse.class, request, response, exc);
+    }
+
+    public static void getBoard(BoardRequest request, Consumer<BoardResponse> response, Consumer<Throwable> exc){
+        instance().send("/getBoard", BoardResponse.class, request, response, exc);
     }
 
 
-    public void createAI(Consumer<AnswerBoard> callback){
-        if(!isAuthorization()) {
-            authorization((s) -> createAI(callback));
-        } else {
-            send("/createAI", content, callback);
-        }
-    }
-
-    public void move(String move, Consumer<AnswerBoard> callback){
-        if(!isAuthorization())
-            authorization((s) -> move(move, callback));
-        else {
-            content.setMove(move);
-            send("/turn", content, callback);
-            content.setMove(null);
-        }
-    }
-
-    public void getBoard(Consumer<AnswerBoard> callback){
-        if(!isAuthorization())
-            authorization((s) -> getBoard(callback));
-        else {
-            send("/getBoard", content, callback);
-        }
-    }
     private static HttpController instance;
-    public static HttpController getInstance(){
+    public static HttpController instance(){
         if(instance == null)
             instance = new HttpController();
         return instance;
