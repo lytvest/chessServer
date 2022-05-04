@@ -16,6 +16,9 @@ public class Move {
     }
 
     public static Move from(String s) {
+        if (s == null)
+            return null;
+
         char fig = '-';
         if (s.length() == 5)
             fig = s.charAt(4);

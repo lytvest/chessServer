@@ -3,6 +3,8 @@ package ru.lytvest.chessserver;
 import lombok.Data;
 import lombok.Getter;
 import lombok.val;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.lytvest.chess.Board;
 import ru.lytvest.chess.Move;
 import ru.lytvest.chess.net.BoardResponse;
@@ -22,6 +24,7 @@ public class ChessGameImpl implements ChessGame {
     private long oldTurnTime = 0;
     private String oldTurn = null;
     private Game game;
+    Logger log = LoggerFactory.getLogger(getClass());
 
     private String nameWhite;
     private String nameBlack;
@@ -37,6 +40,7 @@ public class ChessGameImpl implements ChessGame {
         this.nameWhite = nameWhite;
         this.nameBlack = nameBlack;
         this.game = new Game(nameWhite, nameBlack, new ArrayList<>(), "no win");
+        log.info("create game, white:" + nameWhite + " black:" + nameBlack + " pen:" + board.toPen());
     }
 
     @Override
@@ -49,6 +53,8 @@ public class ChessGameImpl implements ChessGame {
     }
 
     public void move(String name, String turn) {
+        log.info("game:" + id + " move:" + turn);
+
         if (name.equals(nameWhite) == !board.isWhite) {
             System.out.println("move " + name + " " + turn + " wrong color!");
             return;

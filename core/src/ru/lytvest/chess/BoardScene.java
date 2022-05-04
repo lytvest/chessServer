@@ -2,10 +2,10 @@ package ru.lytvest.chess;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import lombok.val;
 import ru.lytvest.chess.net.BoardRequest;
 import ru.lytvest.chess.net.HttpController;
+import ru.lytvest.chess.net.MoveRequest;
 import ru.lytvest.chess.net.UserInfo;
 
 public class BoardScene extends Scene {
@@ -22,13 +22,14 @@ public class BoardScene extends Scene {
     @Override
     public void show() {
         super.show();
-        board = Board.EMPTY;
-        boardContainer = new BoardContainer(board, true, null, "", "");
-        stage.addActor(boardContainer);
-        label = new Label("find enemy...", skin);
-        label.setPosition(width() / 2 - label.getPrefWidth() / 2, height() / 2);
-        stage.addActor(label);
+//        board = Board.EMPTY;
+//        boardContainer = new BoardContainer(board, true, null, "", "");
+//        stage.addActor(boardContainer);
+//        label = new Label("find enemy...", skin);
+//        label.setPosition(width() / 2 - label.getPrefWidth() / 2, height() / 2);
+//        stage.addActor(label);
         sendCreate();
+        startServerUpdate();
 
     }
 
@@ -36,18 +37,35 @@ public class BoardScene extends Scene {
         val req = new BoardRequest(idGame);
         req.copyAuth(UserInfo.getInstance());
         HttpController.getBoard(req, answerBoard -> {
-                    boardContainer.remove();
                     boardContainer = new BoardContainer(
                             Board.fromPen(answerBoard.getPen()),
                             answerBoard.getMeColor().equals("white"),
-                            idGame,
-                            answerBoard.getUsername(),
-                            answerBoard.getEnemyUsername()
+                            this::sendMove
                     );
                     stage.addActor(boardContainer);
                     resizeBoard();
                 }, Throwable::printStackTrace
         );
+    }
+
+    private void sendMove(Move move) {
+        val req = new MoveRequest(idGame, move.toString());
+        req.copyAuth(UserInfo.getInstance());
+        HttpController.move(req, (answer) -> {
+            boardContainer.setCanUpdated(true);
+            Gdx.app.log(getClass().getSimpleName(), "can update true");
+        }, Throwable::printStackTrace);
+    }
+
+    private void startServerUpdate() {
+        val req = new BoardRequest(idGame);
+        req.copyAuth(UserInfo.getInstance());
+        HttpController.getBoard(req, (response) -> {
+            val board = Board.fromPen(response.getPen());
+            if(boardContainer != null)
+                boardContainer.updateBoard(board, Move.from(response.getMove()));
+            Timers.runOneFrom(1f, this::startServerUpdate);
+        }, Throwable::printStackTrace);
     }
 
     @Override
@@ -59,7 +77,8 @@ public class BoardScene extends Scene {
 
     public void resizeBoard() {
         float size = Math.min(width(), height());
-        boardContainer.setBounds(0, 0, width(), height());
+        if (boardContainer != null)
+            boardContainer.setBounds(0, 0, width(), height());
     }
 
     @Override

@@ -144,7 +144,7 @@ public class SimpleController {
     public String search(Model model, @RequestBody SearchRequest request){
         User user = findUser(model, request);
 
-        log.info("create for " + user);
+        log.info("search for " + user + " " + request.getId());
         if (user == null){
             return "jsonTemplate";
         }

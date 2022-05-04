@@ -16,4 +16,8 @@ public class Position {
     public static Position from(String s){
         return new Position(s.charAt(0) - 'a', 8 - Integer.parseInt("" + s.charAt(1)));
     }
+
+    public boolean isCorrect(){
+        return x >= 0 && x < 8 && y >= 0 && y < 8;
+    }
 }

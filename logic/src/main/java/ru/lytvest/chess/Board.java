@@ -11,7 +11,7 @@ import java.util.Random;
 
 public class Board {
 
-    public char[][] arr;
+    public final char[][] arr;
     public final Boolean isWhite;
     public final Boolean whiteOO;
     public final Boolean whiteOOO;
@@ -45,32 +45,32 @@ public class Board {
     }
 
     public Board moved(Move move) {
-        char[][] old = copy();
+        char[][] next = copy();
 
         char fig = get(move.start);
 
-        movedNotControl(move);
+        movedNotControl(next, move);
         if (fig == 'k' && move.end.equals(Position.of(6, 0)) && move.start.equals(Position.of(4, 0))) {
-            movedNotControl(new Move(Position.of(7, 0), Position.of(5, 0), get(7, 0)));
+            movedNotControl(next, new Move(Position.of(7, 0), Position.of(5, 0), get(7, 0)));
         }
         if (fig == 'k' && move.end.equals(Position.of(2, 0)) && move.start.equals(Position.of(4, 0))) {
-            movedNotControl(new Move(Position.of(0, 0), Position.of(3, 0), get(0, 0)));
+            movedNotControl(next, new Move(Position.of(0, 0), Position.of(3, 0), get(0, 0)));
         }
         if (fig == 'K' && move.end.equals(Position.of(6, 7)) && move.start.equals(Position.of(4, 7))) {
-            movedNotControl(new Move(Position.of(7, 7), Position.of(5, 7), get(7, 7)));
+            movedNotControl(next, new Move(Position.of(7, 7), Position.of(5, 7), get(7, 7)));
         }
         if (fig == 'K' && move.end.equals(Position.of(2, 7)) && move.start.equals(Position.of(4, 7))) {
-            movedNotControl(new Move(Position.of(0, 7), Position.of(3, 7), get(0, 7)));
+            movedNotControl(next, new Move(Position.of(0, 7), Position.of(3, 7), get(0, 7)));
         }
 
         if (Character.toLowerCase(fig) == 'p' && move.end.equals(oldPawn)) {
-            set(Position.of(move.end.x, move.start.y), ' ');
+            set(next, Position.of(move.end.x, move.start.y), ' ');
         }
         if (fig == 'P' && move.end.y == 0) {
-            set(move.end, Character.toUpperCase(move.figure));
+            set(next, move.end, Character.toUpperCase(move.figure));
         }
         if (fig == 'p' && move.end.y == 7) {
-            set(move.end, Character.toLowerCase(move.figure));
+            set(next, move.end, Character.toLowerCase(move.figure));
         }
 
         Position oldPawn = null;
@@ -83,8 +83,8 @@ public class Board {
         if (!isWhite)
             ncourse += 1;
 
-        Board res = new Board(
-                arr,
+        return new Board(
+                next,
                 !isWhite,
                 whiteOO && fig != 'K' && !move.end.equals(Position.of(7, 7)) && !move.start.equals(Position.of(7, 7)),
                 whiteOOO && fig != 'K' && !move.end.equals(Position.of(0, 7)) && !move.start.equals(Position.of(0, 7)),
@@ -93,8 +93,6 @@ public class Board {
                 oldPawn,
                 ncourse
         );
-        arr = old;
-        return res;
     }
 
     char[][] copy() {
@@ -105,14 +103,14 @@ public class Board {
         return narr;
     }
 
-    void movedNotControl(Move move) {
+    void movedNotControl(char[][] next, Move move) {
         char fig = get(move.start);
-        set(move.start, ' ');
-        set(move.end, fig);
+        set(next, move.start, ' ');
+        set(next, move.end, fig);
     }
 
-    void set(Position position, char ch) {
-        arr[position.y][position.x] = ch;
+    void set(char[][] next, Position position, char ch) {
+        next[position.y][position.x] = ch;
     }
 
     void pawnMoves(Position position, ArrayList<Position> res) {

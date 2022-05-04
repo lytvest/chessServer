@@ -28,11 +28,12 @@ public class ChooseGameScene extends Scene{
         fiveMinutesButton = new TextButton("5 минут", getSkin());
         tenMinutesButton = new TextButton("10 минут", getSkin());
         botButton = new TextButton("Сыграть с компьютером", getSkin());
-        table.setBounds(50, 50, 600, 600);
         table.add(labelInfo).width(400).height(80).row();
         table.add(fiveMinutesButton).width(400).height(80).row();
         table.add(tenMinutesButton).width(400).height(80).row();
         table.add(botButton).width(400).height(80).row();
+        table.setBounds(width() / 2 - 300, height() / 2 - table.getPrefHeight() / 2, 600, table.getPrefHeight());
+
 
         runTimers();
 
@@ -40,6 +41,26 @@ public class ChooseGameScene extends Scene{
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 val request = new CreateRequest(5 * 60 * 1000);
+                request.copyAuth(UserInfo.getInstance());
+                HttpController.create(request, res -> {
+                    startTimerIsSearch(res.getIdGame());
+                }, Throwable::printStackTrace);
+            }
+        });
+        tenMinutesButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                val request = new CreateRequest(10 * 60 * 1000);
+                request.copyAuth(UserInfo.getInstance());
+                HttpController.create(request, res -> {
+                    startTimerIsSearch(res.getIdGame());
+                }, Throwable::printStackTrace);
+            }
+        });
+        botButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                val request = new CreateRequest(20 * 60 * 1000);
                 request.copyAuth(UserInfo.getInstance());
                 HttpController.createAI(request, res -> {
                     startTimerIsSearch(res.getIdGame());

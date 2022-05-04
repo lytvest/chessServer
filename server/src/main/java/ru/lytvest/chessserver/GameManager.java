@@ -6,10 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import ru.lytvest.chess.net.BoardResponse;
-import ru.lytvest.chess.net.CreateResponse;
-import ru.lytvest.chess.net.SearchResponse;
-import ru.lytvest.chess.net.Statistic;
+import ru.lytvest.chess.net.*;
 import ru.lytvest.chessserver.service.GameService;
 
 import java.util.ArrayList;
@@ -81,7 +78,7 @@ public class GameManager {
             setOldId(UUID.randomUUID().toString());
             return new CreateResponse(getOldId());
         }
-        log.info("create game " + getOld() + " " + user);
+        log.info("create game " + getOld() + " " + user + " id=" + getOldId());
         var game = new ChessGameImpl(getOldId(), getOld(), user);
         val playerWhite = new PlayerObserver(getOld(), game);
         val playerBlack = new PlayerObserver(user, game);
@@ -95,21 +92,19 @@ public class GameManager {
     }
 
     public SearchResponse search(String id){
-        if(Objects.equals(getOldId(), id)){
-            return new SearchResponse(id, false);
-        }
+
         if (map.containsKey(id))
             return new SearchResponse(id, true);
 
         return new SearchResponse(id, false);
     }
 
-    public BoardResponse turn(String idGame, String user, String turn) {
+    public MoveResponse turn(String idGame, String user, String turn) {
         if (!map.containsKey(idGame))
             return null;
         val game = map.get(idGame);
         game.move(user, turn);
-        return game.getAnswer(user);
+        return new MoveResponse(game.getAnswer(user).getMeTime());
     }
 
     private static final Random random = new Random();
@@ -121,10 +116,10 @@ public class GameManager {
         val playerWhite = new PlayerObserver(user, game);
         val playerBlack = new AIObserver(game);
         map.put(game.getId(), game);
-        ai.add(playerBlack);
         game.addObserver(playerWhite);
         game.addObserver(playerBlack);
         game.start();
+        ai.add(playerBlack);
 
         return new CreateResponse(id);
 
