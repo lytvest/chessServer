@@ -21,14 +21,19 @@ public class HttpController {
         json.setOutputType(JsonWriter.OutputType.json);
     }
 
+
+
     private <SEND, GET> void send(String path, Class<GET> getClass, SEND send, Consumer<GET> callSuccess, Consumer<Throwable> callException){
         final HttpRequestBuilder builder = new HttpRequestBuilder();
         builder.newRequest()
                 .method(Net.HttpMethods.POST)
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .url(URL + path)
-                .content(json.toJson(send));
+                .url(URL + path);
+
+        if (send != null){
+            builder.content(json.toJson(send));
+        }
 
         final Net.HttpRequest request = builder.build();
         //  Gdx.app.log(getClass().getSimpleName(), "send " + request.getUrl() + " " + request.getContent());
@@ -36,6 +41,7 @@ public class HttpController {
             @Override
             public void handleHttpResponse(Net.HttpResponse httpResponse) {
                 String res = httpResponse.getResultAsString();
+                Gdx.app.log(getClass().getSimpleName(), "response " + res);
                 val value = reader.parse(res);
                 val status = value.get("status").asString();
                 if (status.equals("ok")){
@@ -87,6 +93,13 @@ public class HttpController {
         instance().send("/getBoard", BoardResponse.class, request, response, exc);
     }
 
+    public static void getStatistic(Consumer<Statistic> response, Consumer<Throwable> exc){
+        instance().send("/statistic", Statistic.class, null, response, exc);
+    }
+
+    public static void search(SearchRequest request, Consumer<SearchResponse> response, Consumer<Throwable> exc){
+        instance().send("/search", SearchResponse.class, request, response, exc);
+    }
 
     private static HttpController instance;
     public static HttpController instance(){

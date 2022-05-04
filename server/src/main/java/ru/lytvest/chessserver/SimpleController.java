@@ -73,7 +73,7 @@ public class SimpleController {
     @PostMapping("getBoard")
     public String findGame(Model model, @RequestBody BoardRequest request){
         User user = findUser(model, request);
-        //log.info("get board for " + user);
+
         if (user == null){
             return "jsonTemplate";
         }
@@ -84,8 +84,10 @@ public class SimpleController {
         }
 
         var answer = gameManager.findGame(request.getIdGame(), request.getLogin());
+
+        log.info("get board for " + user + " " + request.getIdGame() + " " + answer);
         if (answer != null) {
-            model.addAttribute("response", new BoardResponse());
+            model.addAttribute("response", answer);
             model.addAttribute("status", "ok");
         } else {
             model.addAttribute("status", "fail");
@@ -106,7 +108,8 @@ public class SimpleController {
 
         val answer = gameManager.createAI(user.getName());
         if (answer != null) {
-            model.addAttribute("game", answer);
+            log.info("answer create ai response " + answer.getIdGame());
+            model.addAttribute("response", answer);
             model.addAttribute("status", "ok");
         } else {
             model.addAttribute("status", "fail");
@@ -127,7 +130,28 @@ public class SimpleController {
 
         val answer = gameManager.create(user.getName());
         if (answer != null) {
-            model.addAttribute("game", answer);
+            model.addAttribute("response", answer);
+            model.addAttribute("status", "ok");
+        } else {
+            model.addAttribute("status", "fail");
+            model.addAttribute("message", "find enemy");
+        }
+
+        return "jsonTemplate";
+    }
+
+    @PostMapping("search")
+    public String search(Model model, @RequestBody SearchRequest request){
+        User user = findUser(model, request);
+
+        log.info("create for " + user);
+        if (user == null){
+            return "jsonTemplate";
+        }
+
+        val answer = gameManager.search(request.getId());
+        if (answer != null) {
+            model.addAttribute("response", answer);
             model.addAttribute("status", "ok");
         } else {
             model.addAttribute("status", "fail");
@@ -154,7 +178,7 @@ public class SimpleController {
 
         var answer = gameManager.turn(request.getIdGame(), request.getLogin(), request.getMove());
         if (answer != null) {
-            model.addAttribute("game", answer);
+            model.addAttribute("response", answer);
             model.addAttribute("status", "ok");
         } else {
             model.addAttribute("status", "fail");
@@ -163,4 +187,22 @@ public class SimpleController {
 
         return "jsonTemplate";
     }
+
+    @PostMapping("statistic")
+    public String turn(Model model){
+
+
+        var answer = gameManager.getStatistic();
+        if (answer != null) {
+            model.addAttribute("response", answer);
+            model.addAttribute("status", "ok");
+        } else {
+            model.addAttribute("status", "fail");
+            model.addAttribute("message", "find enemy");
+        }
+
+        return "jsonTemplate";
+    }
+
+
 }

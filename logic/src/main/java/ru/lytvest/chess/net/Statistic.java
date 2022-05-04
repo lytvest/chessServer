@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateResponse {
-    String idGame;
+public class Statistic {
+    int countGames;
+    int countPlayers;
 }

@@ -2,12 +2,20 @@ package ru.lytvest.chess;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import ru.lytvest.chess.net.BoardResponse;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import lombok.val;
+import ru.lytvest.chess.net.BoardRequest;
 import ru.lytvest.chess.net.HttpController;
-
-import java.util.Objects;
+import ru.lytvest.chess.net.UserInfo;
 
 public class BoardScene extends Scene {
+    String idGame;
+    Label label;
+
+    public BoardScene(String idGame) {
+        this.idGame = idGame;
+    }
+
     BoardContainer boardContainer;
     Board board;
 
@@ -17,37 +25,30 @@ public class BoardScene extends Scene {
         board = Board.EMPTY;
         boardContainer = new BoardContainer(board, true, null, "", "");
         stage.addActor(boardContainer);
-        final Label label = new Label("find enemy...", skin);
+        label = new Label("find enemy...", skin);
         label.setPosition(width() / 2 - label.getPrefWidth() / 2, height() / 2);
         stage.addActor(label);
-       // sendCreate(label);
+        sendCreate();
 
     }
 
-//    private void sendCreate(Label label) {
-//        HttpController.create(answerBoard -> {
-//                    if (answerBoard != null) {
-//                        createNewBoard(label, answerBoard);
-//                    } else {
-//
-//                    }
-//                }
-//        );
-//    }
-//
-//    private void sendGetBoard(Label label) {
-//        HttpController.getBoard();
-//    }
-//
-//    private void createNewBoard(Label label, BoardResponse boardResponse) {
-//        boardContainer.remove();
-//        board = Board.fromPen(boardResponse.getPen());
-//        boardContainer = new BoardContainer(board, Objects.equals(boardResponse.getMeColor(), "white"), boardResponse.getIdGame(), boardResponse.getUsername(), boardResponse.getEnemyUsername());
-//        stage.addActor(boardContainer);
-//        resizeBoard();
-//        label.remove();
-//        boardContainer.setCanServerUpdate(true);
-//    }
+    private void sendCreate() {
+        val req = new BoardRequest(idGame);
+        req.copyAuth(UserInfo.getInstance());
+        HttpController.getBoard(req, answerBoard -> {
+                    boardContainer.remove();
+                    boardContainer = new BoardContainer(
+                            Board.fromPen(answerBoard.getPen()),
+                            answerBoard.getMeColor().equals("white"),
+                            idGame,
+                            answerBoard.getUsername(),
+                            answerBoard.getEnemyUsername()
+                    );
+                    stage.addActor(boardContainer);
+                    resizeBoard();
+                }, Throwable::printStackTrace
+        );
+    }
 
     @Override
     public void resize(int width, int height) {

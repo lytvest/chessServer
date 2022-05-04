@@ -48,6 +48,13 @@
       "up": "minus-press"
     },
   },
+  "TextButtonStyle": {
+    "default": {
+      "up": "play-button",
+      "down": "play-button-pressed",
+      "font": "con-32"
+    }
+  }
 
 
 }

@@ -19,7 +19,7 @@ public class AuthScene extends Scene{
         val gray = skin.getColor("bg-grey");
         val label = new Label("", skin);
         bg.setColor(gray);
-        bg.setSize(400, 400);
+        bg.setSize(700, 400);
         bg.setPosition(width() / 2 - bg.getWidth() / 2, height() / 2 - bg.getHeight() / 2);
         stage.addActor(bg);
         val user = UserInfo.getInstance();
@@ -31,6 +31,9 @@ public class AuthScene extends Scene{
         HttpController.register(request, (res) -> {
             label.setText(label.getText() + "\nУспешно!");
             label.setPosition(bg.getX() + 10, bg.getY() + bg.getHeight() - label.getPrefHeight() - 10);
+            Timers.runOneFrom(1, () -> {
+                Scenes.push(new ChooseGameScene());
+            });
         }, (e) -> {
             label.setText(label.getText() + "\nОшибка!\n" + e.getMessage());
             label.setPosition(bg.getX() + 10, bg.getY() + bg.getHeight() - label.getPrefHeight() - 10);

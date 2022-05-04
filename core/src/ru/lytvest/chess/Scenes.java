@@ -53,9 +53,11 @@ public class Scenes {
     }
 
     public static void update(float delta) {
+
         if (!scenes.isEmpty()) {
             scenes.get(scenes.size - 1).update(delta);
         }
+        Timers.update(delta);
     }
 
     public static Skin getSkin() {

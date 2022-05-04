@@ -7,10 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.lytvest.chess.net.BoardResponse;
+import ru.lytvest.chess.net.CreateResponse;
+import ru.lytvest.chess.net.SearchResponse;
+import ru.lytvest.chess.net.Statistic;
 import ru.lytvest.chessserver.service.GameService;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -18,6 +23,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class GameManager {
 
     private String old;
+    private String oldId;
     private ConcurrentHashMap<String, ChessGame> map = new ConcurrentHashMap<>();
     private CopyOnWriteArraySet<AIObserver> ai = new CopyOnWriteArraySet<>();
     Logger log = LoggerFactory.getLogger(getClass());
@@ -54,6 +60,13 @@ public class GameManager {
     synchronized public void setOld(String old) {
         this.old = old;
     }
+    synchronized public String getOldId() {
+        return oldId;
+    }
+
+    synchronized public void setOldId(String old) {
+        this.oldId = old;
+    }
 
     public BoardResponse findGame(String idGame, String user) {
         if (map.containsKey(idGame))
@@ -62,16 +75,14 @@ public class GameManager {
         return null;
     }
 
-    public BoardResponse create(String user) {
-
+    public CreateResponse create(String user) {
         if (getOld() == null || getOld().equals(user)) {
             setOld(user);
-            return null;
+            setOldId(UUID.randomUUID().toString());
+            return new CreateResponse(getOldId());
         }
-
-
-        System.out.println("create game " + getOld() + " " + user);
-        var game = new ChessGameImpl(getOld(), user);
+        log.info("create game " + getOld() + " " + user);
+        var game = new ChessGameImpl(getOldId(), getOld(), user);
         val playerWhite = new PlayerObserver(getOld(), game);
         val playerBlack = new PlayerObserver(user, game);
         game.addObserver(playerWhite);
@@ -79,7 +90,18 @@ public class GameManager {
         map.put(game.getId(), game);
         game.start();
         setOld(null);
-        return game.getAnswer(user);
+        setOldId(null);
+        return new CreateResponse(game.getId());
+    }
+
+    public SearchResponse search(String id){
+        if(Objects.equals(getOldId(), id)){
+            return new SearchResponse(id, false);
+        }
+        if (map.containsKey(id))
+            return new SearchResponse(id, true);
+
+        return new SearchResponse(id, false);
     }
 
     public BoardResponse turn(String idGame, String user, String turn) {
@@ -92,8 +114,9 @@ public class GameManager {
 
     private static final Random random = new Random();
 
-    public BoardResponse createAI(String user) {
-        val game = random.nextBoolean() ? new ChessGameImpl(user, AIObserver.NAME) : new ChessGameImpl(AIObserver.NAME, user);
+    public CreateResponse createAI(String user) {
+        val id = UUID.randomUUID().toString();
+        val game = random.nextBoolean() ? new ChessGameImpl(id, user, AIObserver.NAME) : new ChessGameImpl(id, AIObserver.NAME, user);
 
         val playerWhite = new PlayerObserver(user, game);
         val playerBlack = new AIObserver(game);
@@ -103,6 +126,11 @@ public class GameManager {
         game.addObserver(playerBlack);
         game.start();
 
-        return game.getAnswer(user);
+        return new CreateResponse(id);
+
+    }
+
+    public Statistic getStatistic() {
+        return new Statistic(map.size(), map.size() * 2 - ai.size() );
     }
 }

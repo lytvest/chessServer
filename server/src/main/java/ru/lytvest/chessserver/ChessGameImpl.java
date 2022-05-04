@@ -30,9 +30,10 @@ public class ChessGameImpl implements ChessGame {
 
 
     @Getter
-    private String id = UUID.randomUUID().toString();
+    private String id ;
 
-    public ChessGameImpl(String nameWhite, String nameBlack) {
+    public ChessGameImpl(String id, String nameWhite, String nameBlack) {
+        this.id = id;
         this.nameWhite = nameWhite;
         this.nameBlack = nameBlack;
         this.game = new Game(nameWhite, nameBlack, new ArrayList<>(), "no win");
