@@ -70,9 +70,9 @@ public class ChooseGameScene extends Scene{
 
     }
 
-    private void openBoardScene(String id){
+    private void openBoardScene(String id, int maxTime){
         Timers.stop("stats");
-        Scenes.push(new BoardScene(id));
+        Scenes.push(new BoardScene(id, maxTime));
     }
 
     private void startTimerIsSearch(String id){
@@ -80,7 +80,7 @@ public class ChooseGameScene extends Scene{
         req.copyAuth(UserInfo.getInstance());
         HttpController.search(req, res -> {
             if (res.isStart()){
-                openBoardScene(res.getIdGame());
+                openBoardScene(res.getIdGame(), (int) res.getMaxTime());
             } else {
                 Timers.runOneFrom(1.3f, () -> startTimerIsSearch(id));
             }

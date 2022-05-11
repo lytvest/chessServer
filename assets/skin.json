@@ -50,9 +50,11 @@
   },
   "TextButtonStyle": {
     "default": {
-      "up": "play-button",
-      "down": "play-button-pressed",
-      "font": "con-32"
+      "up": "button1",
+      "down": "button1-press",
+      "font": "con-32",
+      "fontColor": "dark",
+      "downFontColor": "bg-grey"
     }
   }
 

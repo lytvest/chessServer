@@ -15,14 +15,18 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Data
+
 public class ChessGameImpl implements ChessGame {
 
+    @Getter
     private Board board = Board.START;
     private long timeWhite = 0;
     private long timeBlack = 0;
     private long oldTurnTime = 0;
+    @Getter
+    private long maxTime;
     private String oldTurn = null;
+    @Getter
     private Game game;
     Logger log = LoggerFactory.getLogger(getClass());
 
@@ -35,10 +39,11 @@ public class ChessGameImpl implements ChessGame {
     @Getter
     private String id ;
 
-    public ChessGameImpl(String id, String nameWhite, String nameBlack) {
+    public ChessGameImpl(String id, String nameWhite, String nameBlack, long maxTime) {
         this.id = id;
         this.nameWhite = nameWhite;
         this.nameBlack = nameBlack;
+        this.maxTime = maxTime;
         this.game = new Game(nameWhite, nameBlack, new ArrayList<>(), "no win");
         log.info("create game, white:" + nameWhite + " black:" + nameBlack + " pen:" + board.toPen());
     }
@@ -87,6 +92,13 @@ public class ChessGameImpl implements ChessGame {
             observer.update(board, oldTurn, nameWhite, nameBlack, timeWhite, timeBlack);
         }
     }
+
+    @Override
+    public boolean isEnd(){
+        log.info("old time: " + oldTurnTime + " max time: " + maxTime);
+        return timeBlack >= maxTime || timeWhite >= maxTime || board.isEndGame();
+    }
+
 
 
 

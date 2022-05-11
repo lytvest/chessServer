@@ -106,7 +106,7 @@ public class SimpleController {
             return "jsonTemplate";
         }
 
-        val answer = gameManager.createAI(user.getName());
+        val answer = gameManager.createAI(user.getName(), request.getTime());
         if (answer != null) {
             log.info("answer create ai response " + answer.getIdGame());
             model.addAttribute("response", answer);
@@ -128,7 +128,7 @@ public class SimpleController {
             return "jsonTemplate";
         }
 
-        val answer = gameManager.create(user.getName());
+        val answer = gameManager.create(user.getName(), request.getTime());
         if (answer != null) {
             model.addAttribute("response", answer);
             model.addAttribute("status", "ok");

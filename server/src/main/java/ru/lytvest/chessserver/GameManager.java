@@ -72,14 +72,14 @@ public class GameManager {
         return null;
     }
 
-    public CreateResponse create(String user) {
+    public CreateResponse create(String user, long maxTime) {
         if (getOld() == null || getOld().equals(user)) {
             setOld(user);
             setOldId(UUID.randomUUID().toString());
             return new CreateResponse(getOldId());
         }
         log.info("create game " + getOld() + " " + user + " id=" + getOldId());
-        var game = new ChessGameImpl(getOldId(), getOld(), user);
+        var game = new ChessGameImpl(getOldId(), getOld(), user, maxTime);
         val playerWhite = new PlayerObserver(getOld(), game);
         val playerBlack = new PlayerObserver(user, game);
         game.addObserver(playerWhite);
@@ -94,9 +94,9 @@ public class GameManager {
     public SearchResponse search(String id){
 
         if (map.containsKey(id))
-            return new SearchResponse(id, true);
+            return new SearchResponse(id, true, map.get(id).getMaxTime());
 
-        return new SearchResponse(id, false);
+        return new SearchResponse(id, false, 0);
     }
 
     public MoveResponse turn(String idGame, String user, String turn) {
@@ -109,9 +109,9 @@ public class GameManager {
 
     private static final Random random = new Random();
 
-    public CreateResponse createAI(String user) {
+    public CreateResponse createAI(String user, long maxTime) {
         val id = UUID.randomUUID().toString();
-        val game = random.nextBoolean() ? new ChessGameImpl(id, user, AIObserver.NAME) : new ChessGameImpl(id, AIObserver.NAME, user);
+        val game = random.nextBoolean() ? new ChessGameImpl(id, user, AIObserver.NAME, maxTime) : new ChessGameImpl(id, AIObserver.NAME, user, maxTime);
 
         val playerWhite = new PlayerObserver(user, game);
         val playerBlack = new AIObserver(game);

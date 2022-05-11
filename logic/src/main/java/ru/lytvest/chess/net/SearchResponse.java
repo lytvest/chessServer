@@ -8,9 +8,11 @@ import lombok.NoArgsConstructor;
 public class SearchResponse {
     String idGame;
     String start;
-    public SearchResponse(String idGame, boolean start){
+    long maxTime;
+    public SearchResponse(String idGame, boolean start, long maxTime){
         this.idGame = idGame;
         this.start = start ? "t" : "f";
+        this.maxTime = maxTime;
     }
 
     public boolean isStart(){

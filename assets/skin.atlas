@@ -6,42 +6,60 @@ filter: Nearest, Nearest
 repeat: none
 bg
   rotate: false
-  xy: 2, 594
+  xy: 2, 601
   size: 691, 1131
   orig: 691, 1131
   offset: 0, 0
   index: -1
+button1
+  rotate: false
+  xy: 1799, 1690
+  size: 184, 42
+  split: 9, 17, 9, 13
+  pad: 0, 6, 0, 4
+  orig: 184, 42
+  offset: 0, 0
+  index: -1
+button1-press
+  rotate: false
+  xy: 2, 5
+  size: 184, 42
+  split: 9, 17, 9, 13
+  pad: 0, 6, 0, 4
+  orig: 184, 42
+  offset: 0, 0
+  index: -1
 chess-icon
   rotate: false
-  xy: 1106, 109
+  xy: 1106, 116
   size: 512, 512
   orig: 512, 512
   offset: 0, 0
   index: -1
 default
   rotate: false
-  xy: 1799, 1693
+  xy: 1620, 596
   size: 32, 32
   orig: 32, 32
   offset: 0, 0
   index: -1
 play-button
   rotate: false
-  xy: 2, 42
+  xy: 2, 49
   size: 550, 550
   orig: 550, 550
   offset: 0, 0
   index: -1
 play-button-pressed
   rotate: false
-  xy: 695, 1175
+  xy: 695, 1182
   size: 550, 550
   orig: 550, 550
   offset: 0, 0
   index: -1
 round-rectangle
   rotate: false
-  xy: 2, 2
+  xy: 1106, 76
   size: 178, 38
   split: 9, 11, 9, 9
   pad: 0, 0, 0, 0
@@ -50,21 +68,21 @@ round-rectangle
   index: -1
 settings
   rotate: false
-  xy: 695, 623
+  xy: 695, 630
   size: 550, 550
   orig: 550, 550
   offset: 0, 0
   index: -1
 settings-pressed
   rotate: false
-  xy: 1247, 1175
+  xy: 1247, 1182
   size: 550, 550
   orig: 550, 550
   offset: 0, 0
   index: -1
 time-green
   rotate: false
-  xy: 695, 613
+  xy: 695, 620
   size: 28, 8
   split: 1, 1, 1, 1
   pad: 0, 0, 0, 0
@@ -73,21 +91,21 @@ time-green
   index: -1
 user
   rotate: false
-  xy: 1247, 623
+  xy: 1247, 630
   size: 550, 550
   orig: 550, 550
   offset: 0, 0
   index: -1
 user-pressed
   rotate: false
-  xy: 554, 42
+  xy: 554, 49
   size: 550, 550
   orig: 550, 550
   offset: 0, 0
   index: -1
 white
   rotate: false
-  xy: 1106, 106
+  xy: 2, 2
   size: 1, 1
   orig: 1, 1
   offset: 0, 0

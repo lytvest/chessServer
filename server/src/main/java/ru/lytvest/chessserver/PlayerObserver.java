@@ -39,6 +39,7 @@ public class PlayerObserver implements GameObserver {
                     .enemyTime(timeWhite);
         }
         answer = bulder.build();
+        answer.setEnd(game.isEnd());
     }
 
     @Override
@@ -47,7 +48,7 @@ public class PlayerObserver implements GameObserver {
     }
 
     public BoardResponse getAnswer() {
-        if(board.isEndGame()){
+        if(game.isEnd()){
             game.removeObserver(this);
         }
         return answer;

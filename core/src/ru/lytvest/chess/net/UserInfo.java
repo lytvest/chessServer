@@ -18,9 +18,13 @@ public class UserInfo extends AuthRequest{
 
     public static UserInfo getInstance(){
         if(info == null) {
-            Random rand = new Random();
-            info = new UserInfo("user-" + rand.nextInt(100), "pass" + rand.nextInt(10000));
+            randomInfo();
         }
         return info;
+    }
+
+    public static void randomInfo() {
+        Random rand = new Random();
+        info = new UserInfo("user-" + rand.nextInt(100), "pass" + rand.nextInt(10000));
     }
 }

@@ -1,7 +1,6 @@
 package ru.lytvest.chess;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -17,8 +16,8 @@ public class TimeContainer extends Group {
     Color lineGreen = Scenes.getSkin().getColor("line-green");
     Color fontLight = Scenes.getSkin().getColor("font-light");
     Color fontGray = Scenes.getSkin().getColor("font-gray");
-    float maxTime = 5 * 60;
-    Label timeLabel = new Label(timeToString(), Scenes.getSkin());
+    float maxTime ;
+    Label timeLabel;
     Label nameLabel;
 
     float lineProgress = 1f;
@@ -29,14 +28,16 @@ public class TimeContainer extends Group {
     boolean isRotate = false;
 
 
-    public TimeContainer(String name, boolean isRotate) {
+    public TimeContainer(String name, int maxTime, boolean isRotate) {
         this.isRotate = isRotate;
+        setMaxTime(maxTime);
 
         line.setColor(lineGreen);
         bgTime.setColor(gray);
         bgName.setColor(gray);
 
         nameLabel = new Label(name, Scenes.getSkin(), "board");
+        timeLabel = new Label(timeToString(), Scenes.getSkin());
         timeLabel.setColor(fontGray);
         nameLabel.setColor(fontGray);
 
@@ -108,16 +109,15 @@ public class TimeContainer extends Group {
         lineUpdateSize();
     }
 
-    private void swapY(Actor a1, Actor a2){
-        float pos = a1.getY();
-        a1.setY(a2.getY());
-        a2.setY(pos);
-    }
 
     private void lineUpdateSize() {
         line.setBounds(0, bgTime.getHeight() - 3, getWidth() * lineProgress, 6);
         if (isRotate) {
             line.setY(bgName.getHeight() - 3);
         }
+    }
+
+    public void setMaxTime(int startTime) {
+        maxTime = startTime / 1000f;
     }
 }

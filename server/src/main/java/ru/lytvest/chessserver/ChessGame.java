@@ -22,4 +22,7 @@ public interface ChessGame {
     void removeObserver(GameObserver observer);
 
     boolean isEmptyObservers();
+    boolean isEnd();
+
+    long getMaxTime();
 }

@@ -256,15 +256,12 @@ public class BoardContainer extends Group {
         super.sizeChanged();
 
         float boardSize = 0f;
-        float timeHeight = getWidth() * 0.07f;
 
-        if (getHeight() >= getWidth() - timeHeight * 2) {
+        if (getHeight() >= getWidth() ) {
 
-            if (getHeight() >= timeHeight * 2 + getWidth()) {
-                boardSize = getWidth();
-            } else {
-                boardSize = getHeight() - timeHeight * 2;
-            }
+
+            boardSize = getWidth();
+
 
 
             startY = getHeight() / 2 - boardSize / 2;
@@ -274,13 +271,8 @@ public class BoardContainer extends Group {
 
 //            meTime.setBounds(startX, startY - timeHeight, getWidth() - 2 * startX, timeHeight);
         } else {
-            float widthTime = getHeight() * 0.3f;
-            if (getWidth() >= getHeight() - widthTime){
-                boardSize = getHeight();
-            } else {
-                boardSize = getWidth() - widthTime;
-            }
-            startX = (getWidth() - widthTime) / 2 - boardSize / 2;
+            boardSize = getHeight();
+            startX = getWidth() / 2 - boardSize / 2;
             startY = 0;
             size = boardSize / 8f;
 //            Gdx.app.log(getClass().getSimpleName(), "startX:" + startX + " startY:" + startY + " size:" + size);
@@ -301,6 +293,10 @@ public class BoardContainer extends Group {
             else
                 cells.get(position).setColor(whiteColorGreen);
         }
+    }
+
+    public Board getBoard() {
+        return board;
     }
 //    public void gameEnd(){
 //        canServerUpdate = false;

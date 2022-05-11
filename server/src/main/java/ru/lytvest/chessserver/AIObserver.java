@@ -45,7 +45,7 @@ public class AIObserver implements GameObserver {
 
 
     public void move() {
-        if (game.getBoard().isEndGame()){
+        if (game.isEnd()){
             game.removeObserver(this);
             endGame = true;
         }
