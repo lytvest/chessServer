@@ -95,7 +95,7 @@ public class ChessGameImpl implements ChessGame {
 
     @Override
     public boolean isEnd(){
-        log.info("old time: " + oldTurnTime + " max time: " + maxTime);
+
         return timeBlack >= maxTime || timeWhite >= maxTime || board.isEndGame();
     }
 

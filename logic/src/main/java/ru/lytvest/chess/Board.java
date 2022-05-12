@@ -4,10 +4,9 @@ package ru.lytvest.chess;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.val;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 
 public class Board {
 
@@ -114,19 +113,22 @@ public class Board {
     }
 
     void pawnMoves(Position position, ArrayList<Position> res) {
+        pawnMoves(position, res, false);
+    }
+    void pawnMoves(Position position, ArrayList<Position> res, boolean ignoreFigures) {
         if (get(position) == 'p') {
-            if (get(position.x, position.y + 1) == ' ')
+            if (get(position.x, position.y + 1) == ' '|| ignoreFigures)
                 res.add(Position.of(position.x, position.y + 1));
-            if (position.y == 1 && get(position.x, position.y + 1) == ' ' && get(position.x, position.y + 2) == ' ')
+            if (position.y == 1 && (get(position.x, position.y + 1) == ' ' && get(position.x, position.y + 2) == ' ' || ignoreFigures))
                 res.add(Position.of(position.x, position.y + 2));
             if (position.x > 0 && Character.isUpperCase(get(position.x - 1, position.y + 1)))
                 res.add(Position.of(position.x - 1, position.y + 1));
             if (position.x < 7 && Character.isUpperCase(get(position.x + 1, position.y + 1)))
                 res.add(Position.of(position.x + 1, position.y + 1));
         } else {
-            if (get(position.x, position.y - 1) == ' ')
+            if (get(position.x, position.y - 1) == ' '|| ignoreFigures)
                 res.add(Position.of(position.x, position.y - 1));
-            if (position.y == 6 && get(position.x, position.y - 1) == ' ' && get(position.x, position.y - 2) == ' ')
+            if (position.y == 6 && (get(position.x, position.y - 1) == ' ' && get(position.x, position.y - 2) == ' '|| ignoreFigures))
                 res.add(Position.of(position.x, position.y - 2));
             if (position.x > 0 && Character.isLowerCase(get(position.x - 1, position.y - 1)))
                 res.add(Position.of(position.x - 1, position.y - 1));
@@ -145,7 +147,7 @@ public class Board {
                 if (get(nx, ny) == ' ')
                     res.add(Position.of(nx, ny));
                 else {
-                    if (Character.isUpperCase(get(nx, ny)) != Character.isUpperCase(get(x, y)))
+                    if (isMe(get(nx, ny)) != isMe(get(x, y)))
                         res.add(Position.of(nx, ny));
                     return;
                 }
@@ -241,7 +243,7 @@ public class Board {
         for (Position position1 : list) {
             if (
                     position1.x >= 0 && position1.x < 8 && position1.y >= 0 && position1.y < 8 &&
-                            (Character.isUpperCase(get(position)) != Character.isUpperCase(get(position1)) || get(position1) == ' ')
+                            (isMe(get(position)) != isMe(get(position1)) || get(position1) == ' ')
             ) res.add(position1);
         }
     }
@@ -249,7 +251,7 @@ public class Board {
     public ArrayList<Move> moviesNotFilterFor(Position position, boolean skipEnemy) {
         ArrayList<Position> res = new ArrayList<>();
         char fig = get(position);
-        if (fig == ' ' || (Character.isUpperCase(fig) != isWhite && skipEnemy))
+        if (fig == ' ' || (isEnemy(fig) && skipEnemy))
             return new ArrayList<>();
 
         switch (Character.toUpperCase(fig)) {
@@ -283,7 +285,7 @@ public class Board {
         ArrayList<Position> res = new ArrayList<>();
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                if (get(x, y) != ' ' && Character.isUpperCase(get(x, y)) != isWhite)
+                if (get(x, y) != ' ' && isEnemy(get(x, y)))
                     res.add(Position.of(x, y));
             }
         }
@@ -294,10 +296,54 @@ public class Board {
         ArrayList<Position> res = new ArrayList<Position>();
         for (int x = 0; x < 8; x++) {
             for (int y = 0; y < 8; y++) {
-                if (get(x, y) != ' ' && Character.isUpperCase(get(x, y)) == isWhite)
+                if (get(x, y) != ' ' && isMe(get(x, y)))
                     res.add(Position.of(x, y));
             }
         }
+        return res;
+    }
+    public boolean isMe(char ch){
+        return Character.isUpperCase(ch) == isWhite;
+    }
+    public boolean isEnemy(char ch){
+        return Character.isUpperCase(ch) != isWhite;
+    }
+    public boolean isMe(char ch, boolean isWhite){
+        return Character.isUpperCase(ch) == isWhite;
+    }
+    public boolean isEnemy(char ch, boolean isWhite){
+        return Character.isUpperCase(ch) != isWhite;
+    }
+
+    public Set<Position> visibleFigures(boolean isWhite){
+        ArrayList<Position> meFigures = isWhite == this.isWhite ? meFigures() : enemyFigures();
+        ArrayList<Position> enemyFigures = isWhite != this.isWhite ? meFigures() : enemyFigures();
+        Set<Position> res = new HashSet<>();
+        for(Position pos : meFigures){
+            for(Move move : moviesNotFilterFor(pos, false)){
+                if (get(move.end) != ' ' && isEnemy(get(move.end), isWhite)){
+                    res.add(move.end);
+                }
+            }
+            val list = new ArrayList<Position>();
+            if (get(pos) == 'p' || get(pos) == 'P'){
+                pawnMoves(pos, list, true);
+            }
+            for(val pos1 : list){
+                if (get(pos1) != ' ')
+                    res.add(pos1);
+            }
+        }
+        for(Position pos : enemyFigures){
+            for(Move move : moviesNotFilterFor(pos, false)){
+                if (get(move.end) != ' ' && isMe(get(move.end), isWhite)){
+                    res.add(move.start);
+                    break;
+                }
+            }
+        }
+        System.out.println(getClass().getSimpleName() + "  --> " + res);
+        res.addAll(meFigures);
         return res;
     }
 

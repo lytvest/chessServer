@@ -4,9 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.actions.AlphaAction;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.actions.SizeToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -37,16 +39,9 @@ public class BoardContainer extends Group {
     private float size;
     private float startX = 0f;
     private float startY = 0f;
-    private Consumer<Move> moveConsumer;
-
-
+    private final Consumer<Move> moveConsumer;
 
     private boolean canUpdated = true;
-//    private boolean canServerUpdate = false;
-//    private TimeContainer meTime;
-//    private TimeContainer enemyTime;
-//    private String idGame;
-//    private Label endGameLabel = new Label("Игра окончена!", Scenes.getSkin());
 
     public BoardContainer(Board board, boolean isWhite, Consumer<Move> moveConsumer) {
 
@@ -56,45 +51,11 @@ public class BoardContainer extends Group {
         addListener(new MoveListener());
         createCells();
         updateBoard(board, null);
-//        meTime = new TimeContainer(meName, false);
-//        enemyTime = new TimeContainer(enemyName, true);
-//        addActor(meTime);
-//        addActor(enemyTime);
-//        addActor(endGameLabel);
-//        endGameLabel.setVisible(false);
     }
 
 
 
 
-
-//    public void setCanServerUpdate(boolean can) {
-//        canServerUpdate = can;
-//        timer = 0;
-//    }
-
-//    private void updateBoardFormServer() {
-//        val req = new BoardRequest(idGame);
-//        req.copyAuth(UserInfo.getInstance());
-//        HttpController.getBoard(req, (response) -> {
-//            if (response != null && response.getMove() != null) {
-//
-//                val nBoard = Board.fromPen(response.getPen());
-//                if (nBoard.isEndGame()){
-//                    gameEnd();
-//                    Gdx.app.log(getClass().getSimpleName(), " game end!");
-//                }
-//                if (!board.equals(nBoard) && canUpdated) {
-//                    meTime.updateTime((int) response.getMeTime());
-//                    enemyTime.updateTime((int) response.getEnemyTime());
-//                    enemyTime.setActive(false);
-//                    if (nBoard.numberCourse > 1)
-//                        meTime.setActive(true);
-//                    updateBoard(nBoard, Move.from(response.getMove()));
-//                }
-//            }
-//        }, (e) -> {});
-//    }
 
     private void createFigure(char ch, Position position) {
         Gdx.app.log(getClass().getSimpleName(), "createFigure " + ch + " in pos " + position);
@@ -105,6 +66,7 @@ public class BoardContainer extends Group {
         TextureRegion reg = Scenes.getSkin().getRegion(name);
         reg.getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         Image img = new Image(reg);
+        img.getColor().a = 0;
 
         img.setSize(size / 10f, size / 10f);
         img.setName("" + ch);
@@ -170,6 +132,30 @@ public class BoardContainer extends Group {
                 }
             }
         }
+        updateInvisible();
+    }
+
+    private void updateInvisible(){
+        val visible = board.visibleFigures(isWhite);
+        for(val pos : figures.keySet()){
+            if(visible.contains(pos) || board.numberCourse <= 1){
+                setAlphaForPosition(pos, 1f);
+            } else {
+                setAlphaForPosition(pos, 0f);
+            }
+        }
+    }
+
+    private void setAlphaForPosition(Position pos, float alpha){
+        if (!figures.containsKey(pos))
+            return;
+        val img = figures.get(pos);
+        if (img.getColor().a == alpha)
+            return;
+        val action = new AlphaAction();
+        action.setDuration(0.4f);
+        action.setAlpha(alpha);
+        img.addAction(action);
     }
 
     private void createCells() {
@@ -206,7 +192,8 @@ public class BoardContainer extends Group {
 
     private void clearCellsColor() {
         for (Map.Entry<Position, Image> entry : cells.entrySet()) {
-            if ((entry.getKey().x + entry.getKey().y) % 2 == 0)
+
+            if ((entry.getKey().x + entry.getKey().y) % 2 == 0 ^ !isWhite)
                 entry.getValue().setColor(blackColor);
             else
                 entry.getValue().setColor(whiteColor);
@@ -288,7 +275,7 @@ public class BoardContainer extends Group {
 
     private void setGreenColor(Position position) {
         if (cells.containsKey(position)) {
-            if ((position.x + position.y) % 2 == 0)
+            if ((position.x + position.y) % 2 == 0 ^ !isWhite)
                 cells.get(position).setColor(blackColorGreen);
             else
                 cells.get(position).setColor(whiteColorGreen);
