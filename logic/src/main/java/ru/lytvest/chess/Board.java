@@ -112,7 +112,7 @@ public class Board {
         next[position.y][position.x] = ch;
     }
 
-    void pawnMoves(Position position, ArrayList<Position> res) {
+    public void pawnMoves(Position position, ArrayList<Position> res) {
         pawnMoves(position, res, false);
     }
     void pawnMoves(Position position, ArrayList<Position> res, boolean ignoreFigures) {

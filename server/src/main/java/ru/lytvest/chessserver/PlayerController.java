@@ -13,12 +13,12 @@ import ru.lytvest.chessserver.repos.UserRepository;
 
 
 @Controller
-public class SimpleController {
+public class PlayerController {
 
     @Autowired
     private UserRepository users;
 
-    Logger log = LoggerFactory.getLogger(SimpleController.class);
+    Logger log = LoggerFactory.getLogger(PlayerController.class);
 
     @Autowired
     private GameManager gameManager;
